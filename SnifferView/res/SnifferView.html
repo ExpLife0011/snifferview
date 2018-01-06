@@ -1,0 +1,131 @@
+﻿<!--SnifferView说明文档-->
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>SnifferView 说明文档</title>
+		<!--自动适应浏览器进行换行-->
+		<style type="text/css">
+		pre {white-space: pre-wrap;
+		word-wrap: break-word;}
+		</style>
+	</head>
+	<!--文档标题-->
+	<h3 align="center">SnifferView 说明文档</h3>
+	<body>
+	<table style="background-color:eeeeee;color:000000"><tr><td><pre>
+<!--SnifferView说明文档目录-->
+<a href="#introduce">SnifferView介绍</a>
+
+<a href="#help">SnifferView过滤规则帮助</a>
+
+<a href="#history">SnifferView修改记录</a>
+
+<a href="mailto:loughr@126.com">by lougdhr@126.com</a>
+</pre></table>
+<br>
+<br>	
+<a name="introduce"></a>
+<!--SnifferView介绍-->
+	<table style="background-color:eeeeee;color:000000;"><tr><td><pre>
+关于网络分析工具SnifferView:
+SnifferView是一个网络分析工具，体积小巧，速度快，支持类似抓包工具Wireshark的过滤语句。
+支持Tcp，Udp，Http等协议的分析，以后还会加入更多的协议。
+支持网络数据的导入和导出。
+支持应用程序网络状态的查看分析，并且支持通过多种过滤方式进行进程的筛选。
+支持根据窗体获取应用程序的网络状态等功能。
+
+SnifferView的过滤规则设置功能:
+可以通过三种方式唤出规则设置对话框：点击工具栏上的规则设置按钮，或者在ListCtrl窗体上右键选择过滤规则，或者通过Ctrl+H可以弹出过滤规则设置对话框，可以在过滤规则编辑框或者显示规则对话框中输入过滤语句，过滤语句的语法跟WireShark的过滤语句很像，可以点击旁边的帮助按钮查看过滤语句的语法规则，输入完成后直接按回车键即可。比如我们对8222端口的tcp封包比较感兴趣，可以在过滤规则的编辑框内输入tcp.port==8222，然后我们想筛选出来自ip为152.32.34.122的封包，我们就可以在显示规则的编辑框中输入ip.addr==152.32.34.122，这样我们需要的封包就筛选出来了，以后还会支持更多的协议类型。
+注：规则分两种，过滤规则和显示规则，符合过滤规则的封包会保存在内存里，可以随时导出到文件或者通过显示规则来进行查看，显示规则会将符合规则的封包从过滤规则的封包中查询出来展示在主界面上。
+
+SnifferView的网络状态查看功能：
+点击工具栏的网络状态按钮即可弹出应用程序网路状态的对话框，可以通过三种方式来选择查看指定应用程序的网络状态，不设置的话就是查看所有应用程序的网络状态，比如如果我们想查看QQ.exe的网络状态，我们可以选择按进程路径或者名称进行过滤，然后在编辑框中输入QQ.exe然后按回车即可，进程路径中包含QQ.exe的所有进程的网络状态就会被筛选出来，左键双击其中的数据会弹出进程的详细信息，包括进程的全路径，版本号等等。
+
+SnifferView的按窗口查看网络状态功能：
+这个功能跟VS附带的窗口查看工具Spy++的用法很像，鼠标移动到工具栏的查找窗口按钮按下别松开，然后将鼠标移动到我们想要查看的窗口上面，松开，就会弹出窗口所属进程的详细的信息，包括网络状态，进程的全路径，版本号等等，这个功能用于对付右下角经常弹出的小广告很有效。
+</pre></table>	
+<br>
+<br>
+<a name="help"></a>
+<table style="background-color:eeeeee;color:000000"><tr><td><pre>
+SnifferView过滤规则：
+SnifferView的过滤语法举例：
+ip.addr==192.168.168.231   过滤ip源地址或者目标地址为192.168.168.231的网络封包
+icmp                       过滤icmp协议的封包
+tcp.src==8345              过滤tcp源端口为8345的网络封包
+tcp.length>128             过滤长度大于128字节的tcp封包，这个长度刨除ip头和tcp头 
+tcp contains "GET"         过滤内容中包含GET字符串的tcp封包
+tcp[4:n32]==0x12ff         过滤tcp用户数据偏移4字节取一个32位数据大小为0x12ff的封包
+tcp.flag.syn               过滤有syn标记的tcp封包
+tcp[chars]=="GET"          过滤tcp用户数据偏移O字节为GET的封包、
+http                       过滤http协议
+http.get                   过滤http的get协议
+http.post                  过滤http post协议
+http.resp                  过滤http的返回包
+http.url contains "img"    过滤http的url中包含img字符串的封包
+
+过滤规则的关键字：
+ip层：ip, ip.addr, ip.src, ip.dst, ip.length
+icmp层：icmp
+tcp层：tcp.port, tcp.src, tcp.dst, tcp.length，tcp.flag.syn|ack|fin|rst|psh|urg, tcp[a:b](a为偏移，b是具体的数据类型，没有a的意思是偏移为0)， tcp contains “aaa”(包含字符串aaa的tcp封包)
+udp层：和tcp类似，不再赘述 
+
+应用层协议：
+http协议：http, http.get, http.post, http.head, http.options, http.put, http.delete, http.tarce, http.url contains "aaa"(http的url包含aaa的封包)
+
+过滤规则的数据类型（用于tcp[a:b]或者udp[a:b]）：
+n8（8位无符号整型），n16（16位无符号整型），n32（32位无符号整型），byte（同n8），bytes（byte列表），char（字符型），chars（字符串）
+
+过滤规则的逻辑连接符：
+>（大于）, <（小于）, >=（大于等于）, <=（小于等于）, ==（等于）, !=（不等于）, &（按位与）
+
+各个过滤表达式可以用and(&&)或者or(||)进行连接，可以使用小括号 比如获取长度大于128的GET包或者POST包:
+tcp.length>128 and (tcp[chars]==”GET” or tcp[chars]== “POST”)
+
+SnifferView语法相对wireshark的主要改进:
+wireshark过滤封包内容的时候语法是这样的tcp[a:b]，a为偏移，b为匹配的长度，偏移是从tcp头开始的，并且tcp头还是变长的，并且只能按字节逐个匹配，用起来很不方便，我们通常关注的并不是tcp头中的内容，而是用户数据的内容，因此SnifferView过滤内容的时候偏移是从用户数据开始的，程序自动计算tcp头的长度，支持各种的数据类型的匹配，自动计算匹配的长度，如果匹配的字符串里有\n\r将自动换为回车和换行。
+比如：
+tcp[4:n16]==0x33ee             从用户数据偏移4字节匹配一个16位整型数据，大小为0x33ee 
+tcp[5:chars]=="aaaa"            从用户数据偏移5个字节匹配一个字符串aaaa
+
+关于配置界面里的主机字节序和网络字节序：
+选主机字节序的意思是封包里的数据是以主机字节序的方式存储的，选网络字节序的意思是封包里的数据是以网络字节序存储的。
+比如：
+tcp[4:n32]==0x12345678
+如果选的是主机字节序会从用户数据偏移4字节的地方开始依次匹配0x78,0x56,0x34,0x12
+如果选的是网络字节序会从用户数据偏移4字节的地方开始依次匹配0x12,0x34,0x56,0x78
+</pre></table>
+<br>
+<br>
+	<a name="history"></a>
+<table style="background-color:eeeeee;color:000000"><tr><td><pre>
+V1.0.0.55 2016/12/2
+1.加入缓存封包最大数量限制,超过后自动暂停嗅探网络封包.
+2.修复获取System权限后桌面路径不正确的问题.
+
+V1.0.0.49 2016/4/12
+1.SnifferView启动的时候将自己加入系统的防火墙的例外列表中
+2.SnifferView启动的时候自动获取System权限，这样的话通过SnifferView可以查看System权限进程的信息
+3.选中hex的数据后状态栏中展示数据的10进制和16进制数据的大小,并展示选中的数据长度
+4.加入hex数据复制功能并提供Ctrl+C复制快捷键
+5.过滤规则加入对icmp协议的支持
+6.其他的一些细节优化
+
+V1.0.0.23 2015/08/13
+1.SnifferView加入了菜单和工具栏，操作更加方便
+2.加入了查看应用程序网络状态查看功能，对于新增的记录和消失的记录有渐变效果，方便查看
+3.应用程序网络查看功能可以分三种方式进行过滤（按应用程序名或者路径，按pid，按端口）
+4.加入根据窗口搜索进程网络状态的功能，使用方法类似spy++
+5.去除多余的调试信息
+6.进程网络状态支持多条过滤规则，规则之间用；分割
+
+V1.0.0.13 2015/07/13
+1.加入了对应用层http协议的支持，加入了若干个http协议的过滤语法，具体参见帮助文档
+2.不同的网络链接使用不同的背景色进行了区分
+3.优化的过滤规则的语法，更加简洁，比如：tcp.srcport调整为tcp.src, tcp.dstport调整为tcp.dst，具体的参见帮助文档
+4.协议类型加入了http的支持
+5.加入暂停嗅探功能
+6.使用压缩壳，可执行文件体积更加小巧
+</pre></table>
+	</body>
+</html>

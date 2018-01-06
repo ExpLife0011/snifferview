@@ -1,0 +1,313 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(中华人民共和国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,57
+ PRODUCTVERSION 1,0,0,57
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "FileDescription", "轻量级封包嗅探工具，方便的进行抓包"
+            VALUE "FileVersion", "1, 0, 0, 57"
+            VALUE "InternalName", "SnifferView"
+            VALUE "LegalCopyright", "Copyright (C) 2015"
+            VALUE "OriginalFilename", "SnifferView.exe"
+            VALUE "ProductName", "SnifferView 应用程序"
+            VALUE "ProductVersion", "1, 0, 0, 57"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN_VIEW DIALOGEX 0, 0, 497, 258
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_3DLOOK | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_ACCEPTFILES
+CAPTION "SnifferView"
+MENU IDR_MAIN_MENU
+FONT 9, "宋体", 400, 0, 0x86
+BEGIN
+    CONTROL         "",IDC_PACKET_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,0,0,496,160
+END
+
+IDD_CONFIG DIALOGEX 0, 0, 278, 260
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "配置"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDT_SHOW,18,54,210,12,ES_MULTILINE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_FILTER,18,94,210,12,ES_MULTILINE | ES_AUTOHSCROLL
+    PUSHBUTTON      "帮助",IDC_BTN_HELP,238,53,30,14
+    PUSHBUTTON      "帮助",IDC_BTN_V,238,93,30,14
+    CONTROL         "主机字节序",IDC_RDO_H,"Button",BS_AUTORADIOBUTTON | WS_GROUP,19,20,54,10
+    CONTROL         "网络字节序",IDC_RDO_N,"Button",BS_AUTORADIOBUTTON,78,20,54,10
+    CONTROL         "表达式中字符串匹配忽略大小写",IDC_CK_SREM,"Button",BS_AUTOCHECKBOX,141,20,127,10
+    CONTROL         "高亮IP头",IDC_RD_IP,"Button",BS_AUTORADIOBUTTON | WS_GROUP,25,142,64,10
+    CONTROL         "高亮TCP/UDP/ICMP头",IDC_RD_TCP,"Button",BS_AUTORADIOBUTTON,92,142,93,10
+    CONTROL         "高亮用户数据",IDC_RD_USER,"Button",BS_AUTORADIOBUTTON,195,143,64,10
+    CONTROL         "关联数据文件，后缀名.vex",IDC_CK_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,171,133,10
+    EDITTEXT        IDC_EDT_MSG,7,195,264,38,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "确定(&S)",IDC_BTN_OK,225,239,46,14
+    GROUPBOX        "显示和过滤规则配置",IDC_STATIC,7,3,264,113
+    GROUPBOX        "其他配置",IDC_STATIC,7,119,264,72
+    GROUPBOX        "HexView",IDC_STATIC,13,131,254,31
+    LTEXT           "过滤规则，规则内的数据将被保留",IDC_STATIC,18,80,166,13
+    LTEXT           "显示规则，规则内的数据将在主界面中展示",IDC_STATIC,18,39,186,13
+    EDITTEXT        IDC_EDT_MAX,179,170,85,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "最大数量",IDC_STATIC,142,172,33,8
+END
+
+IDD_NETCARD_CONFIG DIALOGEX 0, 0, 227, 162
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "网卡设置"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_COM_NETS,5,6,215,39,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "静态",IDC_ST_NETCARD_MSG,5,24,215,114
+    LTEXT           "物理地址：",IDC_STATIC,17,41,43,8
+    LTEXT           "网络地址：",IDC_STATIC,17,60,43,8
+    LTEXT           "子网掩码：",IDC_STATIC,17,79,43,8
+    LTEXT           "默认网关：",IDC_STATIC,17,98,43,8
+    CONTROL         "嗅探经过这个网卡的封包",IDC_CH_SELECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,125,8
+    LTEXT           "192.134.133.112",IDC_ST_IP,68,61,139,8
+    LTEXT           "静态",IDC_ST_MASK,68,80,139,8
+    LTEXT           "静态",IDC_ST_GATWAY,68,99,139,8
+    LTEXT           "192.134.133.112",IDC_ST_MAC,68,42,139,8
+    LTEXT           "DHCP服务：",IDC_STATIC,17,116,43,8
+    LTEXT           "静态",IDC_ST_DHCP,68,116,139,8
+    PUSHBUTTON      "所有网卡",IDC_BTN_ALL,172,142,47,14
+END
+
+IDD_NETSTATE DIALOGEX 0, 0, 389, 250
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "网络状态"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_ST_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,24,374,208
+    COMBOBOX        IDC_CM_SELECT,207,7,132,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CM_FILTER,6,7,185,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_PROCESS DIALOGEX 0, 0, 221, 123
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "explorer.exe 属性"
+FONT 9, "宋体", 400, 0, 0x86
+BEGIN
+    ICON            "",IDC_PROCESS_ICO,20,19,21,21
+    LTEXT           "",IDC_ST_DEC,54,15,153,54
+    EDITTEXT        IDC_EDT_PATH,7,82,207,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    PUSHBUTTON      "定位文件",IDC_BTN_PE,7,102,45,14
+    PUSHBUTTON      "结束进程",IDC_BTN_END,169,102,45,14
+    PUSHBUTTON      "附加进程",IDC_BTN_APPEND,61,102,45,14
+    PUSHBUTTON      "网络状态",IDC_BTN_NET,115,102,45,14
+    LTEXT           "路径：",IDC_STATIC,7,65,28,12
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 171, 121
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "关于SnifferView"
+FONT 9, "宋体", 400, 0, 0x86
+BEGIN
+    ICON            "",IDC_ABOUT_ICO,13,14,21,21
+    LTEXT           "静态",IDC_ABOUT_VER,48,13,116,26
+    EDITTEXT        IDC_EDT_ABOUT,7,46,157,67,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | WS_VSCROLL | NOT WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MAIN_VIEW, DIALOG
+    BEGIN
+        RIGHTMARGIN, 496
+        BOTTOMMARGIN, 251
+    END
+
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 271
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_NETSTATE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 388
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 232
+    END
+
+    IDD_PROCESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 116
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 113
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON                    "res\\main.ico"
+IDI_FILE                ICON                    "res\\file.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAIN_MENU MENU 
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "导入数据",                        ID_IMPORT
+        MENUITEM "导出数据",                        ID_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "退出",                          ID_EXIT
+    END
+    POPUP "设置(&S)"
+    BEGIN
+        MENUITEM "暂停嗅探",                        ID_SUSPEND
+        MENUITEM "清空数据",                        ID_CLEAR
+        MENUITEM "窗口置顶",                        ID_TOPMOST
+    END
+    POPUP "规则(&M)"
+    BEGIN
+        MENUITEM "显示规则",                        ID_SHOW
+        MENUITEM "过滤规则",                        ID_FILTER
+        MENUITEM "网卡设置",                        ID_NET
+    END
+    POPUP "查看(&V)"
+    BEGIN
+        MENUITEM "网络状态",                        ID_NETSTAT
+    END
+    POPUP "帮助(&H)"
+    BEGIN
+        MENUITEM "帮助和更新",                       ID_S_HELP
+        MENUITEM "关于SnifferView",               ID_S_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
+IDB_TARGET_CUR          BITMAP                  "res\\target.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// HTML
+//
+
+IDR_HTML_HELP           HTML                    "res\\SnifferView.html"
+#endif    // 中文(中华人民共和国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
