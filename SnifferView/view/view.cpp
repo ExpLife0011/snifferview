@@ -694,6 +694,33 @@ LRESULT CALLBACK ToolbarCtrlProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	return CallWindowProc(s_toolbar_proc, hwnd, msg, wp, lp);
 }
 
+static BOOL _ChangeWndMessageFilter(UINT uMessage, BOOL bAllow)
+{
+#define MSGFLT_ADD      1
+#define MSGFLT_REMOVE   2
+    HMODULE hUserMod = NULL;
+    BOOL bResult = FALSE;
+    typedef BOOL (WINAPI* ChangeWindowMessageFilterFn)(UINT, DWORD);
+
+    hUserMod = LoadLibraryW(L"user32.dll");
+    if (hUserMod == NULL)
+    {
+        return FALSE;
+    }
+
+    ChangeWindowMessageFilterFn pfnChangeWindowMessageFilter = 
+        (ChangeWindowMessageFilterFn)GetProcAddress(hUserMod, "ChangeWindowMessageFilter");
+    if (pfnChangeWindowMessageFilter == NULL)
+    {
+        FreeLibrary(hUserMod);
+        return FALSE;
+    }
+
+    bResult = pfnChangeWindowMessageFilter(uMessage, bAllow ? MSGFLT_ADD : MSGFLT_REMOVE);
+    FreeLibrary(hUserMod);
+    return bResult;
+}
+
 VOID OnInitDialog(HWND hdlg)
 {
 	g_main_view = hdlg;
@@ -753,6 +780,9 @@ VOID OnInitDialog(HWND hdlg)
 	//如果注册了文件关联进行检查，如果pe文件移动了重新关联
 	RecheckFileRelation();
     SendMessage(hdlg, MSG_ACTIVE_WINDOW, 0, 0);
+
+    _ChangeWndMessageFilter(WM_DROPFILES, TRUE);
+    _ChangeWndMessageFilter(0x0049, TRUE);
 }
 
 VOID WINAPI OnUpdateMsg(HWND hdlg)

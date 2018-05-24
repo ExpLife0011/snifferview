@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,57
- PRODUCTVERSION 1,0,0,57
+ FILEVERSION 1,0,0,59
+ PRODUCTVERSION 1,0,0,59
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,12 +70,12 @@ BEGIN
         BLOCK "080404b0"
         BEGIN
             VALUE "FileDescription", "轻量级封包嗅探工具，方便的进行抓包"
-            VALUE "FileVersion", "1, 0, 0, 57"
+            VALUE "FileVersion", "1, 0, 0, 59"
             VALUE "InternalName", "SnifferView"
             VALUE "LegalCopyright", "Copyright (C) 2015"
             VALUE "OriginalFilename", "SnifferView.exe"
             VALUE "ProductName", "SnifferView 应用程序"
-            VALUE "ProductVersion", "1, 0, 0, 57"
+            VALUE "ProductVersion", "1, 0, 0, 59"
         END
     END
     BLOCK "VarFileInfo"
