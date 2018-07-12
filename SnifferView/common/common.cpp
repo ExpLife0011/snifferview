@@ -718,7 +718,7 @@ BOOL ReleaseRes(const char *path, DWORD id, const char *type)
 		}
 
 		DWORD size = SizeofResource(NULL, src);  
-		HANDLE file = CreateFileA(
+		file = CreateFileA(
 			path,
 			GENERIC_READ | GENERIC_WRITE,
 			FILE_SHARE_READ | FILE_SHARE_WRITE,
