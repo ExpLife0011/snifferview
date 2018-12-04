@@ -9,7 +9,7 @@
 
 #define SFV_NOTIFY_NAME L"Global\\{784BC5BC-25D1-4861-8FED-38C2A9428856}"
 
-VOID RunInUser(LPCWSTR wszImage, LPCWSTR wszCmd, BOOL bSession = TRUE);
+VOID RunInUser(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwSession);
 
 VOID RunSinfferServ();
 #endif

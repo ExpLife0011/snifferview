@@ -363,7 +363,7 @@ BOOL WINAPI DumpPacketsFromFile(IN const char *path, OUT vector<PPacketContent> 
 
 		if (itk != s_check_size)
 		{
-			PrintDbgMessage("dump file error");
+			dp(L"dump file error");
 			break;
 		}
 

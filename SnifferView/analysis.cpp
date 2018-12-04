@@ -193,7 +193,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 {
 	if (msg.m_packet.size() < sizeof(IPHeader))
 	{
-		PrintDbgMessage("buffer error");
+		dp(L"buffer error");
 		return NULL;
 	}
 	PIPHeader ip = (PIPHeader)msg.m_packet.c_str();
@@ -201,7 +201,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 	int length = ntohs(ip->m_ipLength);
 	if (count != length)
 	{
-		PrintDbgMessage("paket length error");
+		dp(L"paket length error");
 	}
 	int itm = 0;
 	itm += sizeof(IPHeader);
@@ -212,7 +212,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 		{
 			if (msg.m_packet.size() - sizeof(IPHeader) < sizeof(TCPHeader))
 			{
-				PrintDbgMessage("tcp buffer error");
+				dp(L"tcp buffer error");
 				break;
 			}
 			TCPHeader *tcp_header = (TCPHeader *)(msg.m_packet.c_str() + sizeof(IPHeader));
@@ -227,7 +227,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 		{
 			if (msg.m_packet.size() - sizeof(IPHeader) < sizeof(UDPHeader))
 			{
-				PrintDbgMessage("udp buffer error");
+				dp(L"udp buffer error");
 				break;
 			}
 			PUDPHeader udp_header = (PUDPHeader)(msg.m_packet.c_str() + itm);
@@ -242,7 +242,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 		{
 			if (msg.m_packet.size() - sizeof(IPHeader) < sizeof(ICMPHeader))
 			{
-				PrintDbgMessage("icmp buffer error");
+				dp(L"icmp buffer error");
 				break;
 			}
 			PICMPHeader icmp_header = (PICMPHeader)(msg.m_packet.c_str() + itm);
@@ -255,7 +255,7 @@ PPacketContent AnalysisProtocol(IN OUT PacketContent &msg)
 		break;
 	default:
 		{
-			PrintDbgMessage("type error\n");
+			dp(L"type error\n");
 		}
 		break;
 	}
@@ -295,7 +295,7 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
                 tmp->m_ip_header.n2h();
                 if (tmp->m_ip_header.m_ipLength != tmp->m_packet.size())
                 {
-                    PrintDbgMessage("ip pakcet length error");
+                    dp(L"ip pakcet length error");
                 }
                 InterlockedIncrement(&g_filter_count);
                 SYSTEMTIME time;
@@ -358,7 +358,7 @@ DWORD WINAPI PacketAnalysisThread(LPVOID p)
 		}
 		else
 		{
-			PrintDbgMessage("wait error");
+			dp(L"wait error");
 		}
 	}
 	return 0;
@@ -395,7 +395,7 @@ DWORD WINAPI PacketClearThread(LPVOID p)
 		}
 		else
 		{
-			PrintDbgMessage("wait error");
+			dp(L"wait error");
 		}
 	}
 	return 0;

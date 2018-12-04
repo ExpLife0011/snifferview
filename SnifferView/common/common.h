@@ -30,7 +30,8 @@ struct AdapterMsg
 VOID WINAPI CentreWindow(HWND hParent, HWND hChild);
 
 //打印调试信息
-VOID WINAPI PrintDbgMessage(LPCSTR pBuffer ...);
+VOID PrintDbgInternal(LPCWSTR wszTarget, LPCSTR szFile, DWORD dwLine, LPCWSTR wszFormat, ...);
+#define dp(f, ...) PrintDbgInternal(L"SnifferView", __FILE__, __LINE__, f, ##__VA_ARGS__)
 
 DWORD n2h_32(IN OUT DWORD v);
 

@@ -155,7 +155,7 @@ static BOOL _InstallSnifferServ()
 
         if (hNotify)
         {
-            PrintDbgMessage("服务进程已经启动");
+            dp(L"服务进程已经启动");
             bStat = TRUE;
             break;
         }
@@ -177,7 +177,7 @@ static BOOL _InstallSnifferServ()
         }
         else
         {
-            PrintDbgMessage("启动SfvServ服务失败:%d", GetLastError());
+            dp(L"启动SfvServ服务失败:%d", GetLastError());
         }
     } while (FALSE);
    
@@ -190,11 +190,11 @@ static BOOL _InstallSnifferServ()
 
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
-    PrintDbgMessage("SnifferView启动参数：%ls", GetCommandLineW());
+    dp(L"SnifferView启动参数：%ls", GetCommandLineW());
 	g_m = m;
 	if (!_AnalysisCmd())
 	{
-		PrintDbgMessage("SnifferView参数错误");
+		dp(L"SnifferView参数错误");
 		return 0;
 	}
 	InitEveryMutexACL(g_sa, g_sd);
@@ -228,7 +228,9 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
                 GetModuleFileNameW(NULL, wszSelf, MAX_PATH);
                 if ((em_system != g_eUserState) && _InstallSnifferServ())
                 {
-                    RunInUser(wszSelf, L"-sv", TRUE);
+                    DWORD dwSession = 1;
+                    ProcessIdToSessionId(GetCurrentProcessId(), &dwSession);
+                    RunInUser(wszSelf, L"-sv", dwSession);
                     break;
                 }
                 if (wszSelf[0])

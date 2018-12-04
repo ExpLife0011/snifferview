@@ -494,7 +494,7 @@ BOOL WINAPI IsPacketPassFixData(IN list<list<FixedContentsFilter>> &filters, IN 
 			}
 			else
 			{
-				PrintDbgMessage("FixData offset error");
+				dp(L"FixData offset error");
 				continue;
 			}
 
@@ -590,7 +590,7 @@ BOOL WINAPI IsPacketPassFixData(IN list<list<FixedContentsFilter>> &filters, IN 
 				break;
 			default:
 				{
-					PrintDbgMessage("filter error aaa");
+					dp(L"filter error aaa");
 					return TRUE;
 				}		
 			}
@@ -629,7 +629,7 @@ BOOL WINAPI IsPacketPassFixString(IN list<list<FixedStringFilter>> &filters, IN 
 			}
 			else
 			{
-				PrintDbgMessage("FixString offset error");
+				dp(L"FixString offset error");
 				continue;
 			}
 
@@ -1292,7 +1292,7 @@ BOOL WINAPI RulesCompile(IN const char *ext, OUT list<FilterRules> &res)
 	}
 	catch (FilterException& e)
 	{
-		PrintDbgMessage("error, msg:%hs", e.get_error_msg());
+		dp(L"error, msg:%hs", e.get_error_msg());
 		return FALSE;
 	}
 	return TRUE;

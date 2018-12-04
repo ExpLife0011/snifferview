@@ -80,41 +80,20 @@ VOID WINAPI CentreWindow(HWND hParent, HWND hChild)
 	MoveWindow(hChild, iX, iY, icW, icH, TRUE);
 }
 
-VOID WINAPI PrintDbgMessage(LPCSTR format ...)
+VOID PrintDbgInternal(LPCWSTR wszTarget, LPCSTR szFile, DWORD dwLine, LPCWSTR wszFormat, ...)
 {
-	va_list arg;
-	char *buffer = 0;
-	size_t size = 0;
+    WCHAR wszFormat1[1024] = {0};
+    WCHAR wszFormat2[1024] = {0};
+    lstrcpyW(wszFormat1, L"[%ls][%hs.%d]%ls");
+    StrCatW(wszFormat1, L"\n");
+    wnsprintfW(wszFormat2, RTL_NUMBER_OF(wszFormat2), wszFormat1, wszTarget, szFile, dwLine, wszFormat);
 
-	buffer = (char *)malloc(sizeof(char) * 512);
-	if (!buffer)
-	{
-		return;
-	}
-	size = 512;
-	va_start(arg, format);
-	int length = wvnsprintfA(buffer, size, format, arg);
-	while(length < 0)
-	{
-		size *= 2;
-        if (size > 1024 * 1024)
-        {
-            MessageBoxA(0, "内存出错", 0, 0);
-            break;
-        }
-		buffer = (char *)realloc(buffer, size);
-		if (!buffer)
-		{
-			break;
-		}
-		length = wvnsprintfA(buffer, size, format, arg);
-	}
-	va_end(arg);
-	if (buffer)
-	{
-        OutputDebugStringA(buffer);
-        free(buffer);
-	}
+    WCHAR wszLogInfo[1024];
+    va_list vList;
+    va_start(vList, wszFormat);
+    wvnsprintfW(wszLogInfo, sizeof(wszLogInfo), wszFormat2, vList);
+    va_end(vList);
+    OutputDebugStringW(wszLogInfo);
 }
 
 BOOL WINAPI WriteFileBuffer(HANDLE file, const char *buffer, size_t length)
@@ -1274,9 +1253,9 @@ static HANDLE _GetProcessToken(DWORD dwPid)
     return hDup;
 }
 
-BOOL RunInSession(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwInSession, DWORD dwShell)
+BOOL RunInSession(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwSessionId, DWORD dwShell)
 {
-    PrintDbgMessage("RunInSession，进程路径:%ls", wszImage);
+    dp(L"RunInSession，进程路径:%ls", wszImage);
     if (!wszImage || !*wszImage)
     {
         return FALSE;
@@ -1305,21 +1284,21 @@ BOOL RunInSession(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwInSession, DWORD dwS
             break;
         }
 
-        if (dwInSession)
+        if (!dwSessionId)
         {
-            DWORD dwActiveSession = _GetCurSessionId();
+            dwSessionId = _GetCurSessionId();
+        }
 
-            if (-1 == dwActiveSession)
-            {
-                PrintDbgMessage("未找到活动session");
-                break;
-            }
-            PrintDbgMessage("在session中启动进程,Session：%d", dwActiveSession);
-            if (!SetTokenInformation(hDup, TokenSessionId, &dwActiveSession, sizeof(DWORD)))
-            {
-                PrintDbgMessage("设置进程session属性失败");
-                break;
-            }
+        if (-1 == dwSessionId)
+        {
+            dp(L"未找到活动session");
+            break;
+        }
+        dp(L"在session中启动进程,Session：%d", dwSessionId);
+        if (!SetTokenInformation(hDup, TokenSessionId, &dwSessionId, sizeof(DWORD)))
+        {
+            dp(L"设置进程session属性失败");
+            break;
         }
 
         if (dwShell)
@@ -1372,7 +1351,7 @@ BOOL RunInSession(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwInSession, DWORD dwS
 
         if (!bStat)
         {
-            PrintDbgMessage("运行程序失败%d", GetLastError());
+            dp(L"运行程序失败%d", GetLastError());
         }
     } while (FALSE);
 

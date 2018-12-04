@@ -63,7 +63,7 @@ static VOID _RunProcess(LPCWSTR wszKey)
     WCHAR wszCmd[1024] = {0};
     WCHAR wszSub[MAX_PATH] = {0};
     DWORD dwSize = sizeof(wszImage);
-    DWORD dwInSession = 1;
+    DWORD dwSessionId = 1;
     wnsprintfW(
         wszSub,
         sizeof(wszSub) / sizeof(WCHAR),
@@ -96,13 +96,13 @@ static VOID _RunProcess(LPCWSTR wszKey)
         wszCmd,
         &dwSize
         );
-    dwSize = sizeof(dwInSession);
+    dwSize = sizeof(dwSessionId);
     SHGetValueW(
         HKEY_LOCAL_MACHINE,
         wszSub,
-        L"session",
+        L"sessionId",
         NULL,
-        &dwInSession,
+        &dwSessionId,
         &dwSize
         );
 
@@ -112,9 +112,9 @@ static VOID _RunProcess(LPCWSTR wszKey)
 
     SHGetValueW(HKEY_LOCAL_MACHINE, wszSub, L"shell", NULL, &dwShell, &dwSize);
 
-    PrintDbgMessage("image:%ls, cmd:%ls, session:%d, shell:%d", wszImage, wszCmd, dwInSession, dwShell);
+    dp(L"image:%ls, cmd:%ls, session:%d, shell:%d", wszImage, wszCmd, dwSessionId, dwShell);
 
-    RunInSession(wszImage, wszCmd, dwInSession, dwShell);
+    RunInSession(wszImage, wszCmd, dwSessionId, dwShell);
 }
 
 static VOID _OnServWork()
@@ -197,7 +197,7 @@ static VOID WINAPI _ServiceMainProc(DWORD dwArgc, LPWSTR *wszArgv)
     ReportLocalServStatus(gs_hStatus, SERVICE_RUNNING, ERROR_SUCCESS);
 }
 
-VOID RunInUser(LPCWSTR wszImage, LPCWSTR wszCmd, BOOL bSession)
+VOID RunInUser(LPCWSTR wszImage, LPCWSTR wszCmd, DWORD dwSession)
 {
     if (!wszImage || !*wszImage)
     {
@@ -234,14 +234,14 @@ VOID RunInUser(LPCWSTR wszImage, LPCWSTR wszCmd, BOOL bSession)
             (lstrlenW(wszCmd) + 1) * sizeof(WCHAR)
             );
     }
-    DWORD dwS = bSession;
+
     SHSetValueW(
         HKEY_LOCAL_MACHINE,
         wszSub,
-        L"session",
+        L"sessionId",
         REG_DWORD,
-        &dwS,
-        sizeof(dwS)
+        &dwSession,
+        sizeof(dwSession)
         );
 
     DWORD dwShell = 0;
