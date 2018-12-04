@@ -45,6 +45,19 @@ short h2n_16(IN OUT short v)
 	return htons(v);
 }
 
+unsigned short h2n_u16(unsigned short d) {
+    const byte *ptr = (byte *)&d;
+    unsigned short result;
+    byte *p2 = (byte *)&result;
+    p2[0] = ptr[1];
+    p2[1] = ptr[0];
+    return result;
+}
+
+unsigned short n2h_u16(unsigned short d) {
+    return h2n_u16(d);
+}
+
 VOID WINAPI CentreWindow(HWND hParent, HWND hChild)
 {
 	if (!hParent)
@@ -1625,4 +1638,27 @@ BOOL ServStartW(LPCWSTR servName)
     _FreeServiceHandlePack(pHandlePack);
 
     return bRet;
+}
+
+mstring Int32ToIp(unsigned int addr, bool changeOrder) {
+    if (addr != 0)
+    {
+        int dd = 123;
+    }
+
+    mstring str;
+    for (int i = 0 ; i < 4 ; i++) {
+        if (!str.empty())
+        {
+            str += ".";
+        }
+
+        if (changeOrder)
+        {
+            str += (mstring().format("%d", (int)(addr >> (i * 8)) & 0xff));
+        } else {
+            str += mstring().format("%d", (int)((addr >> (3 - i) * 8) & 0xff));
+        }
+    }
+    return str;
 }

@@ -9,20 +9,14 @@ enum ProtocolType
 {
 	em_netstat_unknow,
 	em_netstat_tcp,
-	em_netstat_udp
-};
-
-enum em_netstat_filter
-{
-	em_filter_path = 0,
-	em_filter_pid = 1,
-	em_filter_port = 2
+	em_netstat_udp,
+    em_netstat_tcp6,
+    em_netstat_udp6
 };
 
 //执行命令
 struct NetstatCmd
 {
-	em_netstat_filter m_pos;
 	mstring m_cmd;
 };
 
@@ -43,16 +37,49 @@ struct ProcessInfo
 
 typedef struct NetstatInfo
 {
-	ProtocolType m_type;											//网络协议类型
-	//int m_idex;															//在ListView中的序号
+	ProtocolType m_type;    //网络协议类型
 	union Netstate
 	{
-		MIB_TCPROW_OWNER_PID m_tcp_state;			//tcp state
-		MIB_UDPROW_OWNER_PID m_udp_state;		//udp state
+		MIB_TCPROW_OWNER_PID m_tcp_state;   //tcp state
+		MIB_UDPROW_OWNER_PID m_udp_state;   //udp state
 	};
 	Netstate m_state;
-	int m_Pid;															//进程Pid
-	ProcessInfo m_process;										//连接对应的进程信息
+	int m_Pid;              //进程Pid
+	ProcessInfo m_process;  //连接对应的进程信息
+    mstring m_index;
+
+    mstring toString() {
+        switch (m_type) {
+        case em_netstat_tcp:
+            m_index.format(
+                "tcpv4_%hs_%u-%hs_%u_%d_%hs",
+                Int32ToIp(m_state.m_tcp_state.dwLocalAddr, true).c_str(),
+                n2h_u16((unsigned short)m_state.m_tcp_state.dwLocalPort),
+                Int32ToIp(m_state.m_tcp_state.dwRemoteAddr, true).c_str(),
+                n2h_u16((unsigned short)m_state.m_tcp_state.dwRemotePort),
+                m_state.m_tcp_state.dwOwningPid,
+                m_process.m_name.c_str()
+                );
+            break;
+        case em_netstat_udp:
+            m_index.format(
+                "udpv4_%hs_%u_%d_%hs",
+                Int32ToIp(m_state.m_udp_state.dwLocalAddr, true).c_str(),
+                n2h_u16((unsigned short)m_state.m_udp_state.dwLocalPort),
+                m_state.m_udp_state.dwOwningPid,
+                m_process.m_name.c_str()
+                );
+            break;
+        case em_netstat_tcp6:
+            break;
+        case em_netstat_udp6:
+            break;
+        default:
+            break;
+        }
+        return m_index;
+    }
+
 	NetstatInfo()
 	{
 		m_type = em_netstat_unknow;

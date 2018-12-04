@@ -21,24 +21,17 @@
 #define  MSG_ACTIVE_WINDOW              (WM_USER + 5005)
 #define  MSG_ON_FILTER_RET              (WM_USER + 5007)
 
-#define MSG_FILTER_PROMPT				("在此输入过滤条件，可以输入多个，用分号进行分割")
+#define MSG_FILTER_PROMPT               ("在此输入过滤条件，可以输入多个，用分号进行分割")
 
-#define  POS_BY_PATH		0				//by path索引
-#define  POS_BY_PID			1				//by pid索引
-#define	 POS_BY_PORT		2				//by port索引
-
-#define  LOCK_NS			WaitForSingleObject(s_netstat_lock, INFINITE)
-#define  UNLOCK_NS		ReleaseMutex(s_netstat_lock)
+#define  LOCK_NS        WaitForSingleObject(s_netstat_lock, INFINITE)
+#define  UNLOCK_NS      ReleaseMutex(s_netstat_lock)
 
 static HWND s_netstat_view = NULL;
 static HWND s_netstat_list = NULL;
-static HWND s_cm_filter = NULL;
-static HWND s_cm_select = NULL;
 static HWND s_statusbar = NULL;
 static HWND s_edit = NULL;
 
 //过滤类型和过滤语句
-static em_netstat_filter s_filter_type = em_filter_path;
 static mstring s_netstat_str = "";
 //加入多个条件的支持
 static set<mstring> s_netstat_filters;
@@ -49,22 +42,18 @@ static PWIN_PROC s_edit_proc = NULL;
 static HIMAGELIST s_image_list = NULL;
 static map<mstring, int> s_images_data;					//进程路径对应ico索引的缓存
 static map<int, ProcessInfo> s_pe_data;					//进程Pid对应进程全路径的缓存
-static set<HICON> s_icos;										//ico句柄
+static set<HICON> s_icos;								//ico句柄
 
 static HANDLE s_leave_event = CreateEventA(NULL, FALSE, FALSE, NULL);
 static HANDLE s_netstat_lock = CreateMutexA(NULL, FALSE, NULL);
 
-static vector<int> s_cur_filter;									//过滤后的网络连接列表,数据即为s_cur_netstates中的下标
+static vector<int> s_cur_filter;						//过滤后的网络连接列表,数据即为s_cur_netstates中的下标
 static vector<NetstatInfo> s_cur_netstates;				//网络连接列表，用于在ListCtrl中展示
-static set<NetstatInfo> s_org_tcp;							//原始的tcp网路连接列表，已进行排序，用于进行比对
-static set<NetstatInfo> s_org_udp;							//原始的udp网络连接列表, 已进行排序，用于进行比对
+static set<NetstatInfo> s_org_tcp;						//原始的tcp网路连接列表，已进行排序，用于进行比对
+static set<NetstatInfo> s_org_udp;						//原始的udp网络连接列表, 已进行排序，用于进行比对
 
-static BOOL IsNetstatFilter(const NetstatInfo &itm)
+static BOOL IsNetstatFilter(NetstatInfo &itm)
 {
-	//if (s_netstat_str == "")
-	//{
-	//	return TRUE;
-	//}
 	if (s_netstat_filters.size() == 0)
 	{
 		return TRUE;
@@ -76,49 +65,12 @@ static BOOL IsNetstatFilter(const NetstatInfo &itm)
 	bool pass = false;
 	for (its = s_netstat_filters.begin() ; its != s_netstat_filters.end() ; its++)
 	{
-		if (s_filter_type == em_filter_pid)
-		{
-			mu.format("%d", itm.m_Pid);
-			if (*its == mu)
-			{
-				return TRUE;
-			}
-		}
-		else if (s_filter_type == em_filter_path)
-		{
-			mu = its->c_str();
-			mu.repsub("/", "\\");
-			mu.makelower();
-			mk = itm.m_process.m_path;
-			mk.repsub("/", "\\");
-			mk.makelower();
-			if (mstring::npos != mk.find(mu))
-			{
-				return TRUE;
-			}
-		}
-		else if (s_filter_type == em_filter_port)
-		{
-			if (itm.m_type == em_netstat_tcp)
-			{
-				mu.format("%u", n2h_16((USHORT)itm.m_state.m_tcp_state.dwLocalPort));
-				mk.format("%u", n2h_16((USHORT)itm.m_state.m_tcp_state.dwRemotePort));
-				if (mu == *its || mk == *its)
-				{
-					return TRUE;
-				}
-			}
-			else if (itm.m_type == em_netstat_udp)
-			{
-				mu.format("%u", n2h_16((USHORT)itm.m_state.m_udp_state.dwLocalPort));
-				if (mu == *its)
-				{
-					 return TRUE;
-				}
-			}
-		}
-	}
-	return FALSE;
+        if (mstring::npos != itm.m_index.find_in_rangei(*its))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 //对两个排好序的链表进行比较，抽取出减少的数据和新增的数据
@@ -300,6 +252,7 @@ VOID NetstatusAdd(IN set<NetstatInfo> &add)
 	bool raw = false;
 	for (itm = add.begin() ; itm != add.end() ; itm++)
 	{
+        itm->toString();
 		idex = s_cur_netstates.size();
 		raw = false;
 		for (itk = s_cur_netstates.rbegin() ; itk != s_cur_netstates.rend() ; itk++, idex--)
@@ -688,53 +641,15 @@ VOID AnalysisFilterStr()
 VOID OnFilterRet(HWND hdlg, WPARAM wp, LPARAM lp)
 {
 	SetStatusMsg(1, "");
-	int cur = SendMessageA(s_cm_select, CB_GETCURSEL, 0, 0);
-	mstring ms;
-	char buffer[256] = {0x00};
-	int length = sizeof(buffer);
-	int mv = GetWindowTextLengthA(s_cm_filter);
-	if (mv > length)
-	{
-		return;
-	}
-	GetWindowTextA(s_cm_filter, buffer, length);
 
-	
-	//if (POS_BY_PID == cur || POS_BY_PORT == cur)
-	//{
-	//	if (buffer[0] < '0' || buffer[0] > '9')
-	//	{
-	//		s_netstat_str = "";
-	//	}
-	//	else
-	//	{
-	//		int aa =atoi(buffer);
-	//		s_netstat_str.format("%d", aa);
-	//	}
-	//	SetWindowTextA(s_cm_filter, s_netstat_str.c_str());
-	//	length = GetWindowTextLengthA(s_edit);
-	//	SendMessageA(s_edit, EM_SETSEL, length, -1);
-	//}
-	//else
-	//{
-	//	s_netstat_str = buffer;
-	//}
+    int length = GetWindowTextLengthA(s_edit);
+    char *buffer = new char[length + 1];
+    buffer[length] = 0x00;
+    GetWindowTextA(s_edit, buffer, length + 1);
 
-	s_netstat_str = buffer;
-	AnalysisFilterStr();
-
-	if (POS_BY_PATH == cur)
-	{
-		s_filter_type = em_filter_path;
-	}
-	else if (POS_BY_PID == cur)
-	{
-		s_filter_type = em_filter_pid;
-	}
-	else if (POS_BY_PORT == cur)
-	{
-		s_filter_type = em_filter_port;
-	}
+    s_netstat_str = buffer;
+    delete []buffer;
+    AnalysisFilterStr();
 
 	set<int> vvs;
 	vector<int>::iterator itk = s_cur_filter.begin();
@@ -777,8 +692,7 @@ VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 {
 	s_netstat_view = hdlg;
 	s_netstat_list = GetDlgItem(hdlg, IDC_ST_LIST);
-	s_cm_filter = GetDlgItem(hdlg, IDC_CM_FILTER);
-	s_cm_select = GetDlgItem(hdlg, IDC_CM_SELECT);
+    s_edit = GetDlgItem(s_netstat_view, IDC_NETSTAT_EDT_SEARCH);
 	CentreWindow(GetParent(hdlg), hdlg);
 	InitListView();
 	s_statusbar = CreateNetstatusBar(hdlg);
@@ -786,8 +700,8 @@ VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 	
 	CTL_PARAMS arry[] =
 	{
-		{0, s_cm_filter, 0, 0, 1.0f, 0},
-		{0, s_cm_select, 1, 0, 0, 0},
+		{0, s_edit, 0, 0, 1.0f, 0},
+        {IDC_NETSTAT_BTN_SEARCH, 0, 1.0f, 0, 0, 0},
 		{0, s_netstat_list, 0, 0, 1.0f, 1.0f},
 		{0, s_statusbar, 0, 1, 1.0f, 0.0f}
 	};
@@ -804,19 +718,9 @@ VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 	ImageList_AddIcon(s_image_list, ico);
 	s_icos.insert(ico);
 
-	SendMessageA(s_cm_select, CB_INSERTSTRING, POS_BY_PATH, (LPARAM)"根据进程路径或者名称进行过滤");
-	SendMessageA(s_cm_select, CB_INSERTSTRING, POS_BY_PID, (LPARAM)"根据进程Pid进行过滤");
-	SendMessageA(s_cm_select, CB_INSERTSTRING, POS_BY_PORT, (LPARAM)"根据端口进行过滤");
-	SendMessageA(s_cm_select, CB_SETCURSEL, POS_BY_PATH, 0);
-
-	COMBOBOXINFO info = {0};
-	info.cbSize = sizeof(COMBOBOXINFO);
-	SendMessageA(s_cm_filter, CB_GETCOMBOBOXINFO, 0, (LPARAM)&info);
-	s_edit = info.hwndItem;
 	s_edit_proc = (PWIN_PROC)SetWindowLong(s_edit, GWL_WNDPROC, (long)EditProc);
 	InitDelayListctrl(hdlg, s_netstat_list);
 	RefushNetstat();
-	s_filter_type = em_filter_path;
 	s_netstat_str.clear();
 	OnFilterRet(hdlg, 0, 0);
 	UpdateNetMsg();
@@ -909,14 +813,20 @@ VOID OnExecCmd(HWND hdlg, WPARAM wp, LPARAM lp)
 	NetstatCmd *cmd = (NetstatCmd *)lp;
 	if (cmd)
 	{
-		s_filter_type = cmd->m_pos;
 		s_netstat_str = cmd->m_cmd;
 		AnalysisFilterStr();
-		SendMessageA(s_cm_select, CB_SETCURSEL, s_filter_type, 0);
 		SetWindowTextA(s_edit, s_netstat_str.c_str());
 		OnFilterRet(hdlg, wp, lp);
 		UpdateNetMsg();
 	}
+}
+
+static void _OnCommand(HWND hdlg, WPARAM wp, LPARAM lp) {
+    WORD id = LOWORD(wp);
+    if (id == IDC_NETSTAT_BTN_SEARCH)
+    {
+        SendMessageA(s_netstat_view, MSG_ON_FILTER_RET, 0, 0);
+    }
 }
 
 INT_PTR CALLBACK NetStateProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -933,6 +843,9 @@ INT_PTR CALLBACK NetStateProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 				OnTimer(hdlg, wp, lp);
 			}
 			break;
+        case WM_COMMAND:
+            _OnCommand(hdlg, wp, lp);
+            break;
 		case  WM_NOTIFY:
 			{
 				OnNotify(hdlg, wp, lp);

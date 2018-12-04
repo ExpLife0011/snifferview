@@ -40,6 +40,9 @@ short n2h_16(IN OUT short v);
 
 short h2n_16(IN OUT short v);
 
+unsigned short h2n_u16(unsigned short d);
+unsigned short n2h_u16(unsigned short d);
+
 BOOL WINAPI WriteFileBuffer(HANDLE file, const char *buffer, size_t length);
 
 //分析一个字符串是否是一个合法的ip格式
@@ -130,4 +133,7 @@ BOOL ServStopW(LPCWSTR servName);
 
 //启动指定的服务
 BOOL ServStartW(LPCWSTR servName);
+
+//将一个32位无符号整形转为点分十进制ip地址
+mstring Int32ToIp(unsigned int addr, bool changeOrder);
 #endif

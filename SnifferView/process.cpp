@@ -101,7 +101,6 @@ static VOID OnCommand(HWND hdlg, WPARAM wp, LPARAM lp)
 		{
 			HWND state = RunNetstatView(g_main_view, NULL);
 			NetstatCmd cmd;
-			cmd.m_pos = em_filter_pid;
 			cmd.m_cmd.format("%d", s_process.m_pid);
 			SendMessageA(state, MSG_EXEC_CMD, 0, (LPARAM)&cmd);
 			SendMessageA(hdlg, WM_CLOSE, 0, 0);

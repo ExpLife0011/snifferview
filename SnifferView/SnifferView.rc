@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,59
- PRODUCTVERSION 1,0,0,59
+ FILEVERSION 1,0,0,61
+ PRODUCTVERSION 1,0,0,61
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,12 +70,12 @@ BEGIN
         BLOCK "080404b0"
         BEGIN
             VALUE "FileDescription", "轻量级封包嗅探工具，方便的进行抓包"
-            VALUE "FileVersion", "1, 0, 0, 59"
+            VALUE "FileVersion", "1, 0, 0, 61"
             VALUE "InternalName", "SnifferView"
             VALUE "LegalCopyright", "Copyright (C) 2015"
             VALUE "OriginalFilename", "SnifferView.exe"
             VALUE "ProductName", "SnifferView 应用程序"
-            VALUE "ProductVersion", "1, 0, 0, 59"
+            VALUE "ProductVersion", "1, 0, 0, 61"
         END
     END
     BLOCK "VarFileInfo"
@@ -156,8 +156,8 @@ CAPTION "网络状态"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_ST_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,24,374,208
-    COMBOBOX        IDC_CM_SELECT,207,7,132,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_CM_FILTER,6,7,185,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "搜索",IDC_NETSTAT_BTN_SEARCH,279,7,50,14
+    EDITTEXT        IDC_NETSTAT_EDT_SEARCH,6,7,263,14,ES_AUTOHSCROLL
 END
 
 IDD_PROCESS DIALOGEX 0, 0, 221, 123

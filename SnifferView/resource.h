@@ -26,6 +26,7 @@
 #define IDC_BUTTON1                     1005
 #define IDC_BTN_HELP                    1005
 #define IDC_BTN_PE                      1005
+#define IDC_NETSTAT_BTN_SEARCH          1005
 #define IDC_RADIO1                      1006
 #define IDC_RDO_H                       1006
 #define IDC_BTN_END                     1006
@@ -35,6 +36,7 @@
 #define IDC_EDIT2                       1008
 #define IDC_EDT_SHOW                    1008
 #define IDC_EDT_PATH                    1008
+#define IDC_NETSTAT_EDT_SEARCH          1008
 #define IDC_BTN_NET                     1009
 #define IDC_EDIT4                       1010
 #define IDC_EDT_FILTER                  1010

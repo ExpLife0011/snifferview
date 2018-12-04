@@ -8,4 +8,4 @@ using namespace std;
 mstring base64encode(mstring str);
 mstring base64decode(mstring str);
 
-#endif  // #ifndef _H_GDBASE64
+#endif  // #ifndef BASE64_H_H_

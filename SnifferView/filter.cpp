@@ -1133,7 +1133,7 @@ BOOL WINAPI GetSimpleExpressionResult(IN const char *ext, OUT list<FilterRules> 
 					}
 				}
 			}
-		}		
+		}
 	}
 	res = mvs;
 	return TRUE;
