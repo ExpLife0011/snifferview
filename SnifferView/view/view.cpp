@@ -783,6 +783,7 @@ VOID OnInitDialog(HWND hdlg)
 
     _ChangeWndMessageFilter(WM_DROPFILES, TRUE);
     _ChangeWndMessageFilter(0x0049, TRUE);
+    //SetListColumnAutoSet(s_list);
 }
 
 VOID WINAPI OnUpdateMsg(HWND hdlg)

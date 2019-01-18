@@ -1,6 +1,10 @@
+#include <Windows.h>
 #include <map>
 #include <list>
+#include <commctrl.h>
+#include <vector>
 #include "winsize.h"
+#include "LockBase.h"
 
 using namespace std;
 
@@ -397,4 +401,154 @@ BOOL WINAPI SetWindowRange(HWND hwnd, DWORD min_wide, DWORD min_hight, DWORD max
     BOOL ret = _AttachRange(hwnd, min_wide, min_hight, max_wide, max_hight);
     UNLOCK_WINS;
     return ret;
+}
+
+class ListCtrlAutoSetMgr {
+public:
+    static ListCtrlAutoSetMgr *GetInst() {
+        static ListCtrlAutoSetMgr *s_ptr = NULL;
+        if (NULL == s_ptr)
+        {
+            s_ptr = new ListCtrlAutoSetMgr();
+        }
+
+        return s_ptr;
+    }
+
+    static void Register(HWND hwnd) {
+        Init();
+
+        ListCtrlAutoSetMgr *newNode = new ListCtrlAutoSetMgr();
+        newNode->mListCtrl = hwnd;
+        {
+            CScopedLocker lock(sSynLock);
+            sRegisterSet->insert(make_pair(hwnd, newNode));
+        }
+
+        RECT rt = {0};
+        GetClientRect(hwnd, &rt);
+        newNode->mLastWidth = (rt.right - rt.left);
+        newNode->mColumnCache = newNode->GetColumnWideSet();
+        newNode->mPfnOldProc = (PWIN_PROC)SetWindowLongPtrA(hwnd, GWLP_WNDPROC, (LONG_PTR)ListCtrlProc);
+    }
+
+private:
+    static void Init() {
+        if (!sInit)
+        {
+            sInit = TRUE;
+            sSynLock = new CCriticalSectionLockable();
+            sRegisterSet = new map<HWND, ListCtrlAutoSetMgr *>();
+        }
+    }
+
+    ListCtrlAutoSetMgr() {
+        mPfnOldProc = NULL;
+        mListCtrl = NULL;
+    }
+
+    virtual ~ListCtrlAutoSetMgr(){
+    }
+
+    static LRESULT CALLBACK ListCtrlProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+        ListCtrlAutoSetMgr *ptr = NULL;
+        {
+            map<HWND, ListCtrlAutoSetMgr *>::const_iterator it;
+            CScopedLocker lock(sSynLock);
+            it = sRegisterSet->find(hwnd);
+            if (it != sRegisterSet->end())
+            {
+                ptr = it->second;
+            }
+        }
+
+        if (!ptr)
+        {
+            return 0;
+        }
+
+        switch (msg) {
+        case WM_SIZE:
+            ptr->OnSize(wp, lp);
+            break;
+        case WM_DESTROY:
+            {
+                CScopedLocker lock(sSynLock);
+                sRegisterSet->erase(hwnd);
+            }
+            return 0;
+        default:
+            break;
+        }
+        return CallWindowProc(ptr->mPfnOldProc, hwnd, msg, wp, lp);
+    }
+
+    struct ColumnInfo {
+        int mWidth;
+        float mRatio;
+    };
+
+    vector<ColumnInfo> GetColumnWideSet() {
+        RECT clientRect = {0};
+        GetClientRect(mListCtrl, &clientRect);
+
+        int widthCount = 0;
+        vector<int> tmp;
+        for (int i = 0 ; i < 128 ; i++)
+        {
+            int width = ListView_GetColumnWidth(mListCtrl, i);
+            if (width <= 0)
+            {
+                break;
+            }
+
+            tmp.push_back(width);
+            widthCount += width;
+        }
+
+        int clientWidth = clientRect.right - clientRect.left;
+        mSpaceWidth = clientWidth - widthCount;
+
+        vector<ColumnInfo> result;
+        for (vector<int>::const_iterator it = tmp.begin() ; it != tmp.end() ; it++)
+        {
+            ColumnInfo info;
+            info.mWidth = *it;
+            info.mRatio = ((float)info.mWidth / (float)(clientWidth - mSpaceWidth));
+            result.push_back(info);
+        }
+        return result;
+    }
+
+    void ResetColumnWidth(int width) {
+        for (int i = 0 ; i < (int)mColumnCache.size() ; i++)
+        {
+            ListView_SetColumnWidth(mListCtrl, i, (int)((float)(width - mSpaceWidth)* mColumnCache[i].mRatio));
+        }
+    }
+
+    void OnSize(WPARAM wp, LPARAM lp) {
+        int width = LOWORD(lp);
+        ResetColumnWidth(width);
+    }
+
+private:
+    static BOOL sInit;
+    static CCriticalSectionLockable *sSynLock;
+    static map<HWND, ListCtrlAutoSetMgr *> *sRegisterSet;
+
+    PWIN_PROC mPfnOldProc;
+    HWND mListCtrl;
+    int mLastWidth;
+    int mSpaceWidth;
+    vector<ColumnInfo> mColumnCache;
+};
+
+BOOL ListCtrlAutoSetMgr::sInit = FALSE;
+CCriticalSectionLockable *ListCtrlAutoSetMgr::sSynLock = NULL;
+map<HWND, ListCtrlAutoSetMgr *> *ListCtrlAutoSetMgr::sRegisterSet = NULL;
+
+BOOL WINAPI SetListColumnAutoSet(HWND hListCtrl) {
+    ListCtrlAutoSetMgr::Register(hListCtrl);
+    return TRUE;
 }

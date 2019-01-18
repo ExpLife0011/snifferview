@@ -45,6 +45,8 @@ BOOL WINAPI SetCtlsCoord(HWND hdlg, PCTL_PARAMS arry, DWORD count);
 //return:TRUE 成功 FALSE 失败
 BOOL WINAPI SetWindowRange(HWND hwnd, DWORD min_wide, DWORD min_hight, DWORD max_wide, DWORD max_hight);
 
+//设置Listctrl列自动化调整
+BOOL WINAPI SetListColumnAutoSet(HWND hListCtrl);
 #ifdef __cplusplus
 }
 #endif

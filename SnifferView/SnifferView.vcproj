@@ -380,6 +380,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\common\LockBase.h"
+				>
+			</File>
+			<File
 				RelativePath=".\common\mstring.cpp"
 				>
 			</File>
