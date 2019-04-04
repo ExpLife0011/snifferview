@@ -16,10 +16,15 @@
 #define IDB_TARGET_CUR                  130
 #define IDD_ABOUT                       131
 #define IDR_HTML_HELP                   133
+#define IDR_DLL1                        134
+#define IDR_DLL_SYNTAX                  134
+#define IDD_STREAM                      135
 #define IDC_EDIT1                       1003
 #define IDC_EDIT                        1003
 #define IDC_EDT_ABOUT                   1003
 #define IDC_EDT_MAX                     1003
+#define IDC_EDT_FIND                    1003
+#define IDC_STREAM_FIND                 1003
 #define IDC_LIST1                       1004
 #define IDC_PACKET_LIST                 1004
 #define IDC_ST_LIST                     1004
@@ -79,6 +84,7 @@
 #define IDC_ST_DEC                      1042
 #define IDC_ABOUT_ICO                   1045
 #define IDC_ABOUT_VER                   1046
+#define IDC_STREAM_SELECT               1050
 #define ID_40003                        40003
 #define ID_40004                        40004
 #define ID_40005                        40005
@@ -126,14 +132,15 @@
 #define ID_NETSTAT                      40047
 #define ID_WINFIND                      40055
 #define ID_COPY                         40056
+#define ID_STREAM                       40057
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40048
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

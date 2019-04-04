@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="./common"
+				AdditionalIncludeDirectories="./common;.."
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -400,6 +400,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\common\StrUtil.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\common\StrUtil.h"
+				>
+			</File>
+			<File
 				RelativePath=".\common\winsize.cpp"
 				>
 			</File>
@@ -460,6 +468,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\view\StreamView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\view\StreamView.h"
+				>
+			</File>
+			<File
 				RelativePath=".\view\view.cpp"
 				>
 			</File>
@@ -468,8 +484,36 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="SyntaxHlpr"
+			>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxDef.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxParser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxView.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\res\SnifferView.html"
+			>
+		</File>
+		<File
+			RelativePath=".\res\SyntaxView.dll"
 			>
 		</File>
 	</Files>

@@ -137,4 +137,49 @@ BOOL ServStartW(LPCWSTR servName);
 
 //将一个32位无符号整形转为点分十进制ip地址
 mstring Int32ToIp(unsigned int addr, bool changeOrder);
+//获取能打印的字符串
+mstring GetPrintStr(const char *szBuffer, int iSize, bool mulitLine = true);
+
+template <class T>
+class MemoryAlloc {
+public:
+    MemoryAlloc() {
+        mBuffer = NULL;
+        mSize = 0;
+    }
+
+    virtual ~MemoryAlloc() {
+        if (mBuffer)
+        {
+            delete []mBuffer;
+        }
+    }
+
+    T *GetMemory(int size) {
+        if (size < mSize)
+        {
+            return mBuffer;
+        } else {
+            if (mBuffer)
+            {
+                delete []mBuffer;
+            }
+            mSize = size;
+            mBuffer = new T[size];
+        }
+        return mBuffer;
+    }
+
+    T *GetPtr() {
+        return mBuffer;
+    }
+
+    int GetSize() {
+        return mSize;
+    }
+
+private:
+    T *mBuffer;
+    int mSize;
+};
 #endif

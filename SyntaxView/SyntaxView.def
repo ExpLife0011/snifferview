@@ -1,0 +1,3 @@
+EXPORTS
+    RegisterSyntaxProc
+    Scintilla_DirectFunction

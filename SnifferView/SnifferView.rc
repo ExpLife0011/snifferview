@@ -185,6 +185,15 @@ BEGIN
     EDITTEXT        IDC_EDT_ABOUT,7,46,157,67,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | WS_VSCROLL | NOT WS_TABSTOP
 END
 
+IDD_STREAM DIALOGEX 0, 0, 581, 303
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "数据流跟踪"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_STREAM_SELECT,241,7,69,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_STREAM_FIND,7,7,224,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -229,6 +238,14 @@ BEGIN
         RIGHTMARGIN, 164
         TOPMARGIN, 7
         BOTTOMMARGIN, 113
+    END
+
+    IDD_STREAM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 574
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 296
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -296,6 +313,13 @@ IDB_TARGET_CUR          BITMAP                  "res\\target.bmp"
 //
 
 IDR_HTML_HELP           HTML                    "res\\SnifferView.html"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DLL
+//
+
+IDR_DLL_SYNTAX          DLL                     "res\\SyntaxView.dll"
 #endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 

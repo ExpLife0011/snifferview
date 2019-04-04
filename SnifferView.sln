@@ -2,6 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SnifferView", "SnifferView\SnifferView.vcproj", "{6BECCB9D-2E18-42D6-950A-96FB37776BE1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2D61F9FF-501C-4605-8E55-0091D4DBC68D} = {2D61F9FF-501C-4605-8E55-0091D4DBC68D}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SyntaxView", "SyntaxView\SyntaxView.vcproj", "{2D61F9FF-501C-4605-8E55-0091D4DBC68D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +18,10 @@ Global
 		{6BECCB9D-2E18-42D6-950A-96FB37776BE1}.Debug|Win32.Build.0 = Debug|Win32
 		{6BECCB9D-2E18-42D6-950A-96FB37776BE1}.Release|Win32.ActiveCfg = Release|Win32
 		{6BECCB9D-2E18-42D6-950A-96FB37776BE1}.Release|Win32.Build.0 = Release|Win32
+		{2D61F9FF-501C-4605-8E55-0091D4DBC68D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2D61F9FF-501C-4605-8E55-0091D4DBC68D}.Debug|Win32.Build.0 = Debug|Win32
+		{2D61F9FF-501C-4605-8E55-0091D4DBC68D}.Release|Win32.ActiveCfg = Release|Win32
+		{2D61F9FF-501C-4605-8E55-0091D4DBC68D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

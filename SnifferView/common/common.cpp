@@ -88,10 +88,10 @@ VOID PrintDbgInternal(LPCWSTR wszTarget, LPCSTR szFile, DWORD dwLine, LPCWSTR ws
     StrCatW(wszFormat1, L"\n");
     wnsprintfW(wszFormat2, RTL_NUMBER_OF(wszFormat2), wszFormat1, wszTarget, szFile, dwLine, wszFormat);
 
-    WCHAR wszLogInfo[1024];
+    WCHAR wszLogInfo[2048];
     va_list vList;
     va_start(vList, wszFormat);
-    wvnsprintfW(wszLogInfo, sizeof(wszLogInfo), wszFormat2, vList);
+    wvnsprintfW(wszLogInfo, sizeof(wszLogInfo) / sizeof(WCHAR), wszFormat2, vList);
     va_end(vList);
     OutputDebugStringW(wszLogInfo);
 }
@@ -1640,4 +1640,43 @@ mstring Int32ToIp(unsigned int addr, bool changeOrder) {
         }
     }
     return str;
+}
+
+mstring GetPrintStr(const char *szBuffer, int iSize, bool mulitLine)
+{
+    mstring strOut;
+    for (int i = 0 ; i < iSize ;)
+    {
+        byte letter = szBuffer[i];
+        //×Ö·û
+        if (letter >= 0x20 && letter <= 0x7e)
+        {
+            strOut += (char)letter;
+            i++;
+            continue;
+        }
+        //ºº×Ö
+        else if (letter >= 0xb0 && letter <= 0xf7)
+        {
+            if (i < iSize)
+            {
+                byte next = szBuffer[i + 1];
+                if (next >= 0xa1 && next <= 0xfe)
+                {
+                    strOut += (char)letter;
+                    strOut += (char)next;
+                    i += 2;
+                    continue;
+                }
+            }
+        } else if (mulitLine && (letter == '\r' || letter == '\n' || letter == '\t'))
+        {
+            strOut += (char)letter;
+        } else {
+            //²»¿É´òÓ¡
+            strOut += '.';
+        }
+        i++;
+    }
+    return strOut;
 }

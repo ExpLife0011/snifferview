@@ -10,6 +10,7 @@
 #include "view.h"
 #include "netview.h"
 #include "cfgview.h"
+#include "StreamView.h"
 #include "about.h"
 #include "netstat.h"
 #include "../filter.h"
@@ -110,6 +111,9 @@ HWND s_hex = NULL;
 
 #define	POPU_MENU_ITEM_SHOW_NAME                ("显示规则   Ctrl+H")
 #define	POPU_MENU_ITEM_SHOW_ID                  ID_SHOW
+
+#define POPU_MENU_ITEM_STREAM_NAME              ("追踪流      Ctrl+T")
+#define POPU_MENU_ITEM_STREAM_ID                ID_STREAM
 
 #define	POPU_MENU_ITEM_FILTER_NAME              ("过滤规则   Ctrl+F")
 #define	POPU_MENU_ITEM_FILTER_ID                ID_FILTER
@@ -721,6 +725,29 @@ static BOOL _ChangeWndMessageFilter(UINT uMessage, BOOL bAllow)
     return bResult;
 }
 
+static void _InitSniffer() {
+    mstring dllPath;
+    char installDir[256];
+#ifdef _DEBUG
+    GetModuleFileNameA(NULL, installDir, 256);
+    dllPath = installDir;
+    dllPath.path_append("..\\SyntaxView.dll");
+#else
+    GetWindowsDirectoryA(installDir, 256);
+
+    PathAppendA(installDir, "SniffInstall");
+
+    dllPath = installDir;
+    dllPath.path_append("SyntaxView.dll");
+#endif
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
+    {
+        ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
+    }
+    LoadLibraryA(dllPath.c_str());
+    SyntaxParser::GetInstance()->InitParser();
+}
+
 VOID OnInitDialog(HWND hdlg)
 {
 	g_main_view = hdlg;
@@ -783,7 +810,7 @@ VOID OnInitDialog(HWND hdlg)
 
     _ChangeWndMessageFilter(WM_DROPFILES, TRUE);
     _ChangeWndMessageFilter(0x0049, TRUE);
-    //SetListColumnAutoSet(s_list);
+    _InitSniffer();
 }
 
 VOID WINAPI OnUpdateMsg(HWND hdlg)
@@ -820,6 +847,7 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
 	HMENU menu = CreatePopupMenu();
     AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_COPY_ID, POPU_MENU_ITEM_COPY_NAME);
 	AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_SHOW_ID, POPU_MENU_ITEM_SHOW_NAME);
+    AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_STREAM_ID, POPU_MENU_ITEM_STREAM_NAME);
 	if (g_work_state == em_sniffer)
 	{
 		AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_FILTER_ID, POPU_MENU_ITEM_FILTER_NAME);
@@ -1175,6 +1203,11 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
 			ShowConfigView(g_main_view, em_show);
 		}
 		break;
+    case POPU_MENU_ITEM_STREAM_ID:
+        {
+            ShowStreamView(g_main_view, s_last_select);
+        }
+        break;
 	case  POPU_MENU_ITEM_FILTER_ID:
 		{
 			ShowConfigView(g_main_view, em_filter);
