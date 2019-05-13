@@ -1,5 +1,6 @@
 #include <WinSock2.h>
 #include <Windows.h>
+#include <shlobj.h>
 #include <WtsApi32.h>
 #include <Commctrl.h>
 #include <Shlwapi.h>
@@ -738,6 +739,7 @@ static void _InitSniffer() {
     PathAppendA(installDir, "SniffInstall");
 
     dllPath = installDir;
+    SHCreateDirectoryExA(NULL, dllPath.c_str(), NULL);
     dllPath.path_append("SyntaxView.dll");
 #endif
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
@@ -847,7 +849,26 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
 	HMENU menu = CreatePopupMenu();
     AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_COPY_ID, POPU_MENU_ITEM_COPY_NAME);
 	AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_SHOW_ID, POPU_MENU_ITEM_SHOW_NAME);
-    AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_STREAM_ID, POPU_MENU_ITEM_STREAM_NAME);
+
+    bool enableStream = false;
+    LOCK_FILTER;
+    if (s_last_select >= 0 && (g_show_packets.size() > (size_t)s_last_select))
+    {
+        PPacketContent pp = g_show_packets[s_last_select];
+        if (pp->m_tls_type == em_tls_tcp)
+        {
+            enableStream = true;
+        }
+    }
+    UNLOCK_FILTER;
+
+    if (enableStream)
+    {
+        AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_STREAM_ID, POPU_MENU_ITEM_STREAM_NAME);
+    } else {
+        AppendMenuA(menu, MF_DISABLED, POPU_MENU_ITEM_STREAM_ID, POPU_MENU_ITEM_STREAM_NAME);
+    }
+
 	if (g_work_state == em_sniffer)
 	{
 		AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_FILTER_ID, POPU_MENU_ITEM_FILTER_NAME);
