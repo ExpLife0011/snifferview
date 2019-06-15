@@ -49,7 +49,10 @@ static int s_last_select = 0;
 static HWND s_toolbar = NULL;
 static HWND s_status = NULL;
 static HWND s_splitter = NULL;
-static HWND s_edit = NULL;
+//语法过滤窗体
+static HWND gsEditFilter = NULL;
+static HWND gsBtnExp = NULL;;
+
 static HWND s_list = NULL;
 static int s_coord = 0;
 static int s_status_high = 0;
@@ -611,7 +614,7 @@ HWND CreateToolBar(HWND parent)
     return toolbar;
 }
 
-//初始化窗口控件的位置，从上往下依次为toolbar, listctrl, splitter, hex, status
+//初始化窗口控件的位置，从上往下依次为toolbar, filterEdit, listctrl, splitter, hex, status
 VOID InitWindowPos()
 {
     int pos = 0;
@@ -620,16 +623,23 @@ VOID InitWindowPos()
     GetClientRect(g_main_view, &client_rect);
     int c_width = client_rect.right - client_rect.left;
     int c_high = client_rect.bottom - client_rect.top;
-    
-    //toolbar
-    RECT toolbar_rect;
-    GetWindowRect(s_toolbar, &toolbar_rect);
-    int t_width = toolbar_rect.right - toolbar_rect.left;
-    int t_high = toolbar_rect.bottom - toolbar_rect.top;
-    s_toolbar_high = t_high;
-    MapWindowPoints(NULL, g_main_view, (LPPOINT)&toolbar_rect, sizeof(toolbar_rect) / sizeof(POINT));
-    MoveWindow(s_toolbar, client_rect.left, client_rect.top, c_width, t_high, TRUE);
-    pos += t_high;
+
+    //filterEdit, ExpButton
+    RECT filterRect = {0};
+    GetWindowRect(gsEditFilter, &filterRect);
+    int filterWidth = filterRect.right - filterRect.left;
+    int filterHigh = filterRect.bottom - filterRect.top;
+    MapWindowPoints(NULL, g_main_view, (LPPOINT)&filterRect, sizeof(filterRect) / sizeof(POINT));
+    MoveWindow(gsEditFilter, client_rect.left, client_rect.top + pos, c_width - 80, filterHigh, TRUE);
+
+    RECT btnRect = {0};
+    GetWindowRect(gsBtnExp, &btnRect);
+    int btnWidth = btnRect.right - btnRect.left;
+    int btnHigh = btnRect.bottom - btnRect.top;
+    MapWindowPoints(NULL, g_main_view, (LPPOINT)&btnRect, sizeof(btnRect) / sizeof(POINT));
+    int btnX = client_rect.left + c_width - 80 + 5;
+    MoveWindow(gsBtnExp, btnX, filterRect.top, btnWidth, filterHigh, TRUE);
+    pos += (filterHigh + 1);
 
     //listctrl
     RECT list_rect;
@@ -758,6 +768,10 @@ VOID OnInitDialog(HWND hdlg)
     SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
     s_status = CreateStatusBar(hdlg);
     RegistPartlClass();
+
+    gsEditFilter = GetDlgItem(hdlg, IDC_EDT_FILTER);
+    gsBtnExp = GetDlgItem(hdlg, IDC_BTN_EXP);
+
     s_splitter = CreateWindowExA(NULL, s_partition_class_name, "", WS_VISIBLE | WS_CHILD, 10, 0, 0, 0, hdlg, NULL, g_m, NULL);
     s_list = GetDlgItem(hdlg, IDC_PACKET_LIST);
     s_hex = CreateHexView(hdlg, 0, 0);
@@ -781,7 +795,7 @@ VOID OnInitDialog(HWND hdlg)
     //UpdateHexSelect(0, 0, 0, 0);
     SendUserSelectMessage(-1, -1, -1, -1);
     s_timer = SetTimer(hdlg, MSG_TIMER_EVENT_ID, 100, NULL);
-    s_toolbar = CreateToolBar(hdlg);
+    //s_toolbar = CreateToolBar(hdlg);
     SendMessageA(s_toolbar, TB_GETITEMRECT, s_search_idex, (LPARAM)&s_search_rect);
     if (g_work_state == em_sniffer)
     {

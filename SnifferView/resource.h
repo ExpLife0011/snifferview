@@ -74,6 +74,7 @@
 #define IDC_BTN_                        1034
 #define IDC_BTN_SURE                    1034
 #define IDC_BTN_ALL                     1034
+#define IDC_BTN_EXP                     1034
 #define IDC_BTN_OK                      1037
 #define IDC_BUTTON6                     1038
 #define IDC_BTN_RESET                   1038
