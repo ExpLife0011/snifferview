@@ -213,8 +213,7 @@ bool CFileCache::GetPacket(size_t index, PacketContent &packet) const {
     }
 
     PacketPosInFile pos = mPacketSet[index];
-    mstring content = GetContent(pos);
-    return true;
+    return GetPacketFromStr(GetContent(pos), packet);
 }
 
 size_t CFileCache::GetShowCount() const {
@@ -236,10 +235,61 @@ bool CFileCache::GetShow(size_t index, PacketContent &packet) const {
 
 void CFileCache::SetShowPacket(size_t index) {
     CScopedLocker locker(&mDataLocker);
+    /*
+    基于效率考虑,优先将数据插入缓存尾部,因为大部分情况属于这种.
+    如果不满足要求,可能是随机插入情况,通过二分查找找到合适的位置
+    将新的节点插入合适的位置,集合是按照偏移位置升序排列的。
+    */
+    if (index >= mPacketSet.size())
+    {
+        return;
+    }
+
+    PacketPosInFile pos = mPacketSet[index];
+    size_t showSize = mShowSet.size();
+    if ((0 == showSize) || (pos.mStartPos >= mShowSet[showSize - 1].mEndPos))
+    {
+        mShowSet.push_back(pos);
+    } else {
+        size_t pos0 = 0, pos1 = (mShowSet.size() - 1);
+        while (true) {
+            if (pos1 == pos0)
+            {
+                if (pos.mStartPos == mShowSet[pos0].mStartPos)
+                {
+                    break;
+                }
+
+                if (pos.mStartPos < mShowSet[pos0].mStartPos)
+                {
+                    mShowSet.insert(mShowSet.begin() + pos0, pos);
+                }
+                else{
+                    mShowSet.insert(mShowSet.begin() + pos0 + 1, pos);
+                }
+                break;
+            }
+
+            size_t mid = (pos1 - pos0) / 2;
+            PacketPosInFile tmp = mShowSet[mid];
+
+            if (tmp.mStartPos == pos.mStartPos)
+            {
+                break;
+            }
+
+            if (tmp.mStartPos > pos.mStartPos)
+            {
+                pos1 = mid;
+            } else {
+                pos0 = mid;
+            }
+        }
+    }
 }
 
 void CFileCache::ClearShow() {
-   CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mDataLocker);
     mShowSet.clear();
 }
 

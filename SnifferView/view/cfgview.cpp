@@ -176,14 +176,7 @@ VOID OnCfgviewReturn()
 		show_refush = TRUE;
 	}
 
-	if (filter_refush)
-	{
-		SetMsg("规则生效");
-		ChangeFilterRules(filter_rules);
-		ChangeShowRules(show_rules);
-		RecheckFilterPacket();
-	}
-	else if (show_refush)
+	if (show_refush)
 	{
 		SetMsg("规则生效");
 		ChangeShowRules(show_rules);

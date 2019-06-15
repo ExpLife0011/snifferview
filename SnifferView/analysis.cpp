@@ -269,9 +269,8 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
 {
     InterlockedIncrement(&g_packet_count);
     BOOL bOverFLow = FALSE;
-    do 
+    do
     {
-        //if (IsPacketPassFilter(&msg))
         {
             LOCK_FILTER;
             if (CFileCache::GetInst()->GetPacketCount() >= gs_llMaxCount)
@@ -304,19 +303,14 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
                 GetLocalTime(&time);
                 msg.m_time.format("%04d-%02d-%02d %02d:%02d:%02d %03d", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
 
-                //g_filter_packets.push_back(tmp);
                 bool show = false;
                 if (IsPacketPassShow(&msg))
                 {
                     InterlockedIncrement(&g_show_count);
                     GetPacketShowBuffer(&msg);
                     show = true;
-                    //LOCK_SHOW;
-                    //g_show_packets.push_back(tmp);
-                    //UNLOCK_SHOW;
                     if (IsWindow(g_main_view))
                     {
-                        //PostMessageA(g_main_view, MSG_UPDATE_DATA, 0, 0);
                         PostDelayMessage(g_main_view, MSG_UPDATE_DATA, 0, 0);
                     }
                 }
@@ -456,20 +450,6 @@ VOID RecheckFilterPacket()
 VOID RecheckShowPacket()
 {
     LOCK_FILTER;
-    /*
-    g_show_packets.clear();
-    InterlockedExchange(&g_show_count, 0);
-    vector<PPacketContent>::iterator itm = g_filter_packets.begin();
-    while(itm != g_filter_packets.end())
-    {
-        if (IsPacketPassShow(*itm))
-        {
-            g_show_packets.push_back(*itm);
-            InterlockedIncrement(&g_show_count);
-        }
-        itm++;
-    }
-    */
     CFileCache::GetInst()->ClearShow();
     for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
     {
@@ -498,11 +478,12 @@ VOID ClearPackets()
     LOCK_CLEAR;
     //s_clear_packets.insert(s_clear_packets.end(), g_filter_packets.begin(), g_filter_packets.end());
     UNLOCK_CLEAR;
-    SetEvent(s_clear_event);
+    //SetEvent(s_clear_event);
     //g_filter_packets.clear();
     //g_show_packets.clear();
     //g_filter_packets.swap(vector<PPacketContent>());
     //g_show_packets.swap(vector<PPacketContent>());
+    CFileCache::GetInst()->ClearCache();
     UNLOCK_FILTER;
     InterlockedExchange(&g_packet_count, 0);
     InterlockedExchange(&g_filter_count, 0);

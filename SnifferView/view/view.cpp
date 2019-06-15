@@ -108,14 +108,14 @@ HPEN s_spy_pen = NULL;
 //hex控件
 HWND s_hex = NULL;
 
-#define POPU_MENU_ITEM_COPY_NAME                ("复制数据   Ctrl+C")
-#define POPU_MENU_ITEM_COPY_ID                  ID_COPY
+#define POPU_MENU_ITEM_COPY_NAME                   ("复制数据   Ctrl+C")
+#define POPU_MENU_ITEM_COPY_ID                     ID_COPY
 
 #define    POPU_MENU_ITEM_SHOW_NAME                ("显示规则   Ctrl+H")
 #define    POPU_MENU_ITEM_SHOW_ID                  ID_SHOW
 
-#define POPU_MENU_ITEM_STREAM_NAME              ("追踪流      Ctrl+T")
-#define POPU_MENU_ITEM_STREAM_ID                ID_STREAM
+#define POPU_MENU_ITEM_STREAM_NAME                 ("追踪流      Ctrl+T")
+#define POPU_MENU_ITEM_STREAM_ID                   ID_STREAM
 
 #define    POPU_MENU_ITEM_FILTER_NAME              ("过滤规则   Ctrl+F")
 #define    POPU_MENU_ITEM_FILTER_ID                ID_FILTER
@@ -144,10 +144,10 @@ HWND s_hex = NULL;
 #define    POPU_MENU_ITEM_CLEAR_NAME               ("清空数据   Ctrl+X")
 #define    POPU_MENU_ITEM_CLEAR_ID                 ID_CLEAR
 
-#define POPU_MENU_ITEM_ABOUT_NAME               ("关于   Ctrl+A")
+#define POPU_MENU_ITEM_ABOUT_NAME                  ("关于   Ctrl+A")
 #define    POPU_MENU_ITEM_ABOUT_ID                 ID_S_ABOUT
 
-#define POPU_MENU_ITEM_HELP_NAME                ("帮助和更新   Ctrl+V")
+#define POPU_MENU_ITEM_HELP_NAME                   ("帮助和更新   Ctrl+V")
 #define    POPU_MENU_ITEM_HELP_ID                  ID_S_HELP
 
 LRESULT CALLBACK PartitionProc(HWND hdlg, UINT message, WPARAM wp, LPARAM lp);
