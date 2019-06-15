@@ -5,6 +5,7 @@
 #include "../common/StrUtil.h"
 #include "../global.h"
 #include "../SyntaxHlpr/SyntaxDef.h"
+#include "../FileCache.h"
 
 using namespace std;
 
@@ -185,31 +186,34 @@ INT_PTR CStreamView::DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 
 void CStreamView::GetPacketSet() {
     LOCK_FILTER;
-    if (g_show_packets.size() <= (size_t)mCurPos)
+    if (CFileCache::GetInst()->GetShowCount() <= (size_t)mCurPos)
     {
         UNLOCK_FILTER;
         return;
     }
 
-    PPacketContent ptr = g_show_packets[mCurPos];
-    mstring unique = ptr->m_packet_mark;
-    mUnique1 = ptr->m_dec_mark;
+    PacketContent content;
+    CFileCache::GetInst()->GetShow(mCurPos, content);
 
-    for (size_t i = 0 ; i < g_filter_packets.size() ; i++)
+    mstring unique = content.m_packet_mark;
+    mUnique1 = content.m_dec_mark;
+
+    for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
     {
-        PPacketContent ptr = g_filter_packets[i];
-        if (ptr->m_packet_mark != unique)
+        PacketContent tmp;
+        CFileCache::GetInst()->GetPacket(i, tmp);
+        if (tmp.m_packet_mark != unique)
         {
             continue;
         }
 
         PacketContent *ss = new PacketContent;
-        *ss = *ptr;
+        *ss = tmp;
         mPacketSet.push_back(ss);
 
-        if (mUnique2.empty() && ptr->m_dec_mark != mUnique1)
+        if (mUnique2.empty() && tmp.m_dec_mark != mUnique1)
         {
-            mUnique2 = ptr->m_dec_mark;
+            mUnique2 = tmp.m_dec_mark;
         }
     }
     UNLOCK_FILTER;

@@ -509,6 +509,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="FileCache"
+			>
+			<File
+				RelativePath=".\FileCache.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileCache.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\res\SnifferView.html"
 			>

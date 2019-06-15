@@ -23,6 +23,5 @@ struct DumpFileVersion
 	}
 };
 
-BOOL WINAPI DumpPacketsToFile(IN const char *path, IN vector<PPacketContent> &packets);
-
-BOOL WINAPI DumpPacketsFromFile(IN const char *path, OUT vector<PPacketContent> &packets);
+BOOL WINAPI DumpPacketsToFile(IN const char *path);
+BOOL WINAPI DumpPacketsFromFile(IN const char *path);
