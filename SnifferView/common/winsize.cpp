@@ -107,6 +107,7 @@ static VOID _OnSize(HWND hwnd, WPARAM wp, LPARAM lp)
             //ΦΨ»ζ΄°Με
             InvalidateRect(info.m_hwnd, NULL, TRUE);
         }
+        //InvalidateRect(hwnd, NULL, TRUE);
     }
 leave:
     UNLOCK_WINS;

@@ -267,11 +267,13 @@ LRESULT CALLBACK PartitionProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                 MoveToEx(dc, rt.left, s_coord, NULL);
                 LineTo(dc, rt.right, s_coord);
                 s_coord = rt.top + (short)HIWORD(lp);
+                /*
                 if (s_coord <= s_toolbar_high)
                 {
                     s_coord = s_toolbar_high + 5;;
                 }
-                
+                */
+
                 RECT ct;
                 RECT cl;
                 GetClientRect(s_parent, &cl);
@@ -308,7 +310,9 @@ VOID AdustWindowItem()
     float hk = 1.0f - hs;
     CTL_PARAMS arry[] =
     {
-        {0, s_toolbar, 0, 0, 1.0f, 0},
+        //{0, s_toolbar, 0, 0, 1.0f, 0},
+        {NULL, gsEditFilter, 0, 0, 1.0f, 0},
+        {NULL, gsBtnExp, 1, 0, 0, 0},
         {IDC_PACKET_LIST, NULL, 0, 0, 1.0f, hs},
         {NULL, s_hex, 0, hs, 1.0f, hk},
         {0, s_splitter, 0, hs, 1, 0},
@@ -764,7 +768,7 @@ VOID OnInitDialog(HWND hdlg)
 {
     g_main_view = hdlg;
     s_spy_pen = (HPEN)GetStockObject(WHITE_PEN);
-    //s_spy_pen = CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
+    s_spy_pen = CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
     SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
     s_status = CreateStatusBar(hdlg);
     RegistPartlClass();
@@ -776,6 +780,7 @@ VOID OnInitDialog(HWND hdlg)
     s_list = GetDlgItem(hdlg, IDC_PACKET_LIST);
     s_hex = CreateHexView(hdlg, 0, 0);
     InitListView(); 
+
     g_list_proc = (PWIN_PROC)SetWindowLong(s_list, GWL_WNDPROC, (long)ListCtrlProc);
     g_hex_proc = (PWIN_PROC)SetWindowLong(s_hex, GWL_WNDPROC, (long)HexCtrlProc);
  
@@ -801,6 +806,7 @@ VOID OnInitDialog(HWND hdlg)
     {
         s_toolbar_proc = (PWIN_PROC)SetWindowLong(s_toolbar, GWL_WNDPROC, (long)ToolbarCtrlProc);
     }
+
     SetWindowPos(hdlg, NULL, 0, 0, 1100, 600, SWP_NOMOVE | SWP_NOZORDER);
     CentreWindow(NULL, hdlg);
     //初始化窗口菜单
@@ -808,6 +814,7 @@ VOID OnInitDialog(HWND hdlg)
     //初始化窗口控件的位置
     InitWindowPos();
     AdustWindowItem();
+
     if (g_work_state == em_sniffer)
     {
         CFileCache::GetInst()->InitFileCache();
@@ -847,13 +854,17 @@ VOID WINAPI OnUpdateMsg(HWND hdlg)
 
     GetWindowRect(s_hex, &rt);
     MapWindowPoints(NULL, hdlg, (LPPOINT)&rt, sizeof(RECT) / sizeof(POINT));
+
     RECT rk;
     GetClientRect(hdlg, &rk);
 
+    /*
     itm += s_toolbar_high;
     long top = itm - 1;
     long h = rk.bottom - rk.top - itm - s_status_high + 2;
     MoveWindow(s_hex, rk.left, top, rk.right - rk.left, h, TRUE);
+    */
+    MoveWindow(s_hex, rk.left, s_coord + s_splitter_high, rk.right - rk.left, rt.bottom - (s_coord + s_splitter_high), TRUE);
     AdustWindowItem();
 }
 
@@ -1990,8 +2001,10 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
     case  WM_TIMER:
         OnTimerEvent(wp, lp);
         break;
+        /*
     case  WM_ERASEBKGND:
         return 1;
+        */
     case  MSG_UPDATE_ITEM_SPACE:
         {
             OnUpdateMsg(hdlg);
