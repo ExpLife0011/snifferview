@@ -1,48 +1,36 @@
 #pragma once
-#include <WinSock2.h>
-#include <Windows.h>
-#include <map>
-#include <list>
-#include "../analysis.h"
-#include "../SyntaxHlpr/SyntaxView.h"
+#include "../SyntaxHlpr/SyntaxCache.h"
 
-class CStreamView {
+#define LABEL_TCP_PIPE1     "TcpPipe1"
+#define LABEL_TCP_PIPE2     "TcpPipe2"
+
+#define STAT_TCP_PIPE1      510
+#define STAT_TCP_PIPE2      511
+
+class CStreamView : public CSyntaxCache
+{
 public:
-    CStreamView(int curPos);
+    CStreamView();
     virtual ~CStreamView();
 
-    bool Create(HWND parent);
-    bool DoModule(HWND parent);
+    void InitStreamView(HWND hParent, int x, int y, int cx, int cy);
 
 private:
-    void InitSyntaxView();
-    /*Window Message*/
-    void OnInitDlg(WPARAM wp, LPARAM lp);
-    void OnCommand(WPARAM wp, LPARAM lp);
-    void OnClose(WPARAM wp, LPARAM lp);
-    void OnMessage(UINT msg, WPARAM wp, LPARAM lp);
-    static INT_PTR CALLBACK DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp);
+    static void __stdcall TcpPipe1Parser(
+        int initStyle,
+        unsigned int startPos,
+        const char *ptr,
+        int length,
+        StyleContextBase *s,
+        void *param
+        );
 
-private:
-    void PrintHex(const mstring &desc, const mstring &content);
-    void AddData(const mstring &desc, const mstring &data);
-    void GetPacketSet();
-    void LoadPacketSet(int type);
-
-private:
-    list<PacketContent *> mPacketSet;
-    mstring mUnique1;   //正向标识
-    mstring mUnique2;   //反向标识
-
-    int mCurSel;
-    int mLineMax;
-    int mCurPos;
-    HWND mParent;
-    HWND mhWnd;
-    HWND mFind;
-    HWND mShowSelect;
-    SyntaxView mShowView;
-    static std::map<HWND, CStreamView *> msPtrMap;
+    static void __stdcall TcpPipe2Parser(
+        int initStyle,
+        unsigned int startPos,
+        const char *ptr,
+        int length,
+        StyleContextBase *s,
+        void *param
+        );
 };
-
-void ShowStreamView(HWND hParent, int curPos);

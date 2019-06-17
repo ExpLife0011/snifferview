@@ -6,6 +6,7 @@
 #include <SyntaxView/include/SciLexer.h>
 #include <SyntaxView/include/Scintilla.h>
 #include "mstring.h"
+#include "LockBase.h"
 #include "SyntaxDef.h"
 #include "export.h"
 
@@ -42,25 +43,46 @@ struct LabelParser {
 //lparam : no used
 #define MSG_SET_KEYWORK_STR           5071
 
-class SyntaxView {
+typedef LRESULT (CALLBACK *PWIN_PROC)(HWND, UINT, WPARAM, LPARAM);
+
+class SyntaxView : public CCriticalSectionLockable {
 public:
     SyntaxView();
     virtual ~SyntaxView();
 
+    //SyntaxView Create
     bool CreateView(HWND parent, int x, int y, int cx, int cy);
+    //Parser Register
     bool RegisterParser(const std::mstring &label, pfnLabelParser parser, void *param);
+    //Send Window Message
     size_t SendMsg(UINT msg, WPARAM wp, LPARAM lp) const;
+    //AppendText To View
     void AppendText(const std::mstring &label, const std::mstring &text);
+    //Set View Text
     void SetText(const std::mstring &label, const std::mstring &text);
+    //Get Current View Text
     std::mstring GetText() const;
+    //Set Line Num
     void SetLineNum(bool lineNum);
     void ClearView();
     HWND GetWindow() {
         return m_hwnd;
     }
 
-    void CheckLineNum();
-    void ResetLineNum();
+    //update view
+    void UpdateView() const;
+
+    //Auto to EndLine
+    bool SetAutoScroll(bool flag);
+    //Sel Jump To Next Str
+    bool JmpNextPos(const std::mstring &str);
+    bool JmpFrontPos(const std::mstring &str);
+    bool JmpFirstPos(const std::mstring &str);
+    bool JmpLastPos(const std::mstring &str);
+
+    //Set Keyword For HighLight
+    bool AddHighLight(const std::mstring &keyWord, DWORD colour);
+    bool ClearHighLight();
 
     void SetStyle(int type, unsigned int textColour, unsigned int backColour);
     void ShowCaretLine(bool show, unsigned int colour);
@@ -68,8 +90,7 @@ public:
     void SetDefStyle(unsigned int textColour, unsigned int backColour);
     void ShowVsScrollBar(bool show);
     void ShowHsScrollBar(bool show);
-    void LoadSyntaxCfgFile(const std::mstring path);
-    std::string GetFont();
+
     void SetFont(const std::string &fontName);
     void SetCaretColour(unsigned int colour);
     void SetCaretSize(int size);
@@ -79,14 +100,26 @@ public:
     int SetScrollEndLine();
 
 private:
+    void OnViewUpdate() const;
+    INT_PTR OnNotify(HWND hdlg, WPARAM wp, LPARAM lp);
+    static LRESULT CALLBACK WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
+    void CheckLineNum();
+    void ResetLineNum();
+
+private:
+    PWIN_PROC mParentProc;
+    static CCriticalSectionLockable *msLocker;
+    static std::map<HWND, SyntaxView *> msWinProcCache;
+
     bool mLineNum;
     int mLineCount;
+    bool mAutoScroll;
 
-    std::string m_path;
     HWND m_hwnd;
     HWND m_parent;
     SCINTILLA_FUNC m_pfnSend;
     SCINTILLA_PTR m_param;
-    std::map<int, std::string> m_SyntaxMap;
+    std::map<std::mstring, DWORD> mHighLight;
+    std::mstring mStrInView;
 };
 #endif //SYNTAXSHELL_H_H_

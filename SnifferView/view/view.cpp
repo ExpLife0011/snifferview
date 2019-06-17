@@ -11,7 +11,7 @@
 #include "view.h"
 #include "netview.h"
 #include "cfgview.h"
-#include "StreamView.h"
+#include "StreamDlg.h"
 #include "about.h"
 #include "netstat.h"
 #include "../filter.h"

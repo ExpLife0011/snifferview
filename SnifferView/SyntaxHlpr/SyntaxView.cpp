@@ -12,9 +12,115 @@ using namespace std;
 
 typedef int (* SCINTILLA_FUNC) (void*, int, int, int);
 typedef void * SCINTILLA_PTR;
+map<HWND, SyntaxView *> SyntaxView::msWinProcCache;
+CCriticalSectionLockable *SyntaxView::msLocker = NULL;
 
 SyntaxView::SyntaxView() {
     mLineNum = false;
+    mAutoScroll = false;
+    mParentProc = NULL;
+
+    if (NULL == msLocker)
+    {
+        msLocker = new CCriticalSectionLockable();
+    }
+}
+
+bool SyntaxView::ClearHighLight() {
+    mHighLight.clear();
+
+    OnViewUpdate();
+    return true;
+}
+
+void SyntaxView::OnViewUpdate() const {
+    size_t length = SendMsg(SCI_GETTEXTLENGTH, 0, 0);
+    SendMsg(SCI_SETINDICATORCURRENT, NOTE_KEYWORD, 0);
+    SendMsg(SCI_INDICATORCLEARRANGE, 0, length);
+
+    if (mHighLight.empty())
+    {
+        return;
+    }
+
+    int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
+    int lineCount = SendMsg(SCI_LINESONSCREEN, 0, 0);
+    int lastLine = firstLine + lineCount;
+    int curLine = firstLine;
+
+    int startPos = SendMsg(SCI_POSITIONFROMLINE, firstLine, 0);
+    int lastPos = SendMsg(SCI_GETLINEENDPOSITION, lastLine, 0);
+
+    if (lastPos <= startPos)
+    {
+        return;
+    }
+
+    mstring str = mStrInView.substr(startPos, lastPos - startPos);
+    for (map<mstring, DWORD>::const_iterator it = mHighLight.begin() ; it != mHighLight.end() ; it++)
+    {
+        size_t pos1 = 0;
+        size_t pos2 = 0;
+        while (mstring::npos != (pos1 = str.find_in_rangei(it->first, pos2))) {
+            SendMsg(SCI_INDICATORFILLRANGE, pos1 + startPos, it->first.size());
+
+            pos2 = pos1 + it->first.size();
+        }
+    }
+}
+
+INT_PTR SyntaxView::OnNotify(HWND hdlg, WPARAM wp, LPARAM lp) {
+    NotifyHeader *header = (NotifyHeader *)lp;
+    SCNotification *notify = (SCNotification *)lp;
+
+    switch (header->code) {
+        case SCN_UPDATEUI:
+            {
+                if (notify->updated & SC_UPDATE_SELECTION)
+                {
+                    size_t pos1 = SendMsg(SCI_GETSELECTIONSTART, 0, 0);
+                    size_t pos2 = SendMsg(SCI_GETSELECTIONEND, 0, 0);
+                }
+                OnViewUpdate();
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+LRESULT SyntaxView::WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+    SyntaxView *ptr = NULL;
+    {
+        CScopedLocker locker(msLocker);
+        map<HWND, SyntaxView *>::iterator it = msWinProcCache.find(hwnd);
+        if (it != msWinProcCache.end())
+        {
+            ptr = it->second;
+        }
+    }
+
+    if (NULL == ptr)
+    {
+        return 0;
+    }
+
+    PWIN_PROC pfnOldProc = ptr->mParentProc;
+    switch (msg) {
+        case WM_NOTIFY:
+            break;
+        case WM_DESTROY:
+            {
+                CScopedLocker locker(msLocker);
+                SetWindowLongPtrA(hwnd, DWLP_DLGPROC, (LONG_PTR)pfnOldProc);
+                msWinProcCache.erase(hwnd);
+            }
+            break;
+        default:
+            break;
+    }
+    return CallWindowProc(pfnOldProc, hwnd, msg, wp, lp);;
 }
 
 bool SyntaxView::CreateView(HWND parent, int x, int y, int cx, int cy) {
@@ -40,6 +146,22 @@ bool SyntaxView::CreateView(HWND parent, int x, int y, int cx, int cy) {
 
         SendMsg(SCI_SETLEXER, SCLEX_LABEL, 0);
         SendMsg(SCI_SETCODEPAGE, 936, 0);
+
+        //INDIC_ROUNDBOX for HighLight
+        SendMsg(SCI_INDICSETSTYLE, NOTE_KEYWORD, INDIC_ROUNDBOX);
+        SendMsg(SCI_INDICSETALPHA, NOTE_KEYWORD, 100);
+        SendMsg(SCI_INDICSETFORE, NOTE_KEYWORD, RGB(0, 0xff, 0));
+
+        SendMsg(SCI_INDICSETSTYLE, NOTE_SELECT, INDIC_ROUNDBOX);
+        SendMsg(SCI_INDICSETALPHA, NOTE_SELECT, 100);
+        SendMsg(SCI_INDICSETFORE, NOTE_SELECT, RGB(0, 0, 0xff));
+
+        if (IsWindow(m_parent))
+        {
+            CScopedLocker locker(msLocker);
+            msWinProcCache[m_parent] = this;
+            mParentProc = (PWIN_PROC)SetWindowLongPtrA(m_parent, DWLP_DLGPROC, (LONG_PTR)WndSubProc);
+        }
     }
     return (TRUE == IsWindow(m_hwnd));
 }
@@ -69,6 +191,12 @@ void SyntaxView::ClearView() {
     SetText(LABEL_DEFAULT, "");
 }
 
+bool SyntaxView::AddHighLight(const std::mstring &keyWord, DWORD colour) {
+    mHighLight[keyWord] = colour;
+    OnViewUpdate();
+    return true;
+}
+
 void SyntaxView::SetStyle(int type, unsigned int textColour, unsigned int backColour) {
     SendMsg(SCI_STYLESETFORE, type, textColour);
     SendMsg(SCI_STYLESETBACK, type, backColour);
@@ -78,6 +206,7 @@ void SyntaxView::ShowMargin(bool bShow) {
     if (bShow)
     {
     } else {
+        SendMsg(SCI_SETMARGINWIDTHN, 0, 0);
         SendMsg(SCI_SETMARGINWIDTHN, 1, 0);
     }
 }
@@ -105,13 +234,6 @@ void SyntaxView::ShowVsScrollBar(bool show) {
 
 void SyntaxView::ShowHsScrollBar(bool show) {
     SendMsg(SCI_SETHSCROLLBAR, show, 0);
-}
-
-std::string SyntaxView::GetFont() {
-    char tmp[128];
-    tmp[0] = 0x00;
-    SendMsg(SCI_STYLEGETFONT, STYLE_DEFAULT, (LPARAM)tmp);
-    return tmp;
 }
 
 void SyntaxView::SetFont(const std::string &fontName) {
@@ -143,6 +265,11 @@ int SyntaxView::SetScrollEndLine() {
 }
 
 void SyntaxView::CheckLineNum() {
+    if (!mLineNum)
+    {
+        return;
+    }
+
     int cur = SendMsg(SCI_GETLINECOUNT, 0, 0);
 
     int t1 = 1;
@@ -174,6 +301,11 @@ void SyntaxView::CheckLineNum() {
 }
 
 void SyntaxView::ResetLineNum() {
+    if (!mLineNum)
+    {
+        return;
+    }
+
     mLineCount = 0;
     int width = SendMsg(SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)"_0");
     SendMsg(SCI_SETMARGINWIDTHN, 0, width);
@@ -195,9 +327,15 @@ void SyntaxView::AppendText(const std::mstring &label, const std::mstring &text)
     SendMsg(SCI_APPENDTEXT, (WPARAM)text.size(), (LPARAM)text.c_str());
     SendMsg(SCI_SETREADONLY, 1, 0);
 
+    mStrInView += text;
     if (mLineNum)
     {
         CheckLineNum();
+    }
+
+    if (mAutoScroll)
+    {
+        SetScrollEndLine();
     }
 }
 
@@ -237,7 +375,13 @@ void SyntaxView::SetText(const std::mstring &label, const std::mstring &text) {
     SendMsg(MSG_LABEL_APPEND_LABEL, 0, (LPARAM)&param);
     SendMsg(SCI_SETTEXT, 0, (LPARAM)text.c_str());
     SendMsg(SCI_SETREADONLY, 1, 0);
+    mStrInView = text;
     ResetLineNum();
+
+    if (mAutoScroll)
+    {
+        SetScrollEndLine();
+    }
 }
 
 mstring SyntaxView::GetText() const {
@@ -248,4 +392,85 @@ mstring SyntaxView::GetText() const {
     ptr[length] = 0;
     SendMsg(SCI_GETTEXT, length + 1, (LPARAM)ptr);
     return ptr;
+}
+
+//从当前选中的位置开始向后查找.如果没有,从当前可见页开始查找
+bool SyntaxView::JmpNextPos(const mstring &str) {
+    int pos1 = SendMsg(SCI_GETSELECTIONSTART, 0, 0);
+    int pos2 = SendMsg(SCI_GETSELECTIONEND, 0, 0);
+
+    size_t startPos = 0;
+    if (pos2 > pos1)
+    {
+        startPos = pos2;
+    } else {
+        int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
+        startPos = SendMsg(SCI_POSITIONFROMLINE, firstLine, 0);
+    }
+
+    size_t pos3 = mStrInView.find_in_rangei(str, startPos);
+    if (mstring::npos == pos3)
+    {
+        return false;
+    }
+
+    size_t line = SendMsg(SCI_LINEFROMPOSITION, pos3, 0);
+    SendMsg(SCI_SETSEL, pos3, pos3 + str.size());
+
+    //将当前选中内容置于屏幕正中央
+    int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
+    int lineCount = SendMsg(SCI_LINESONSCREEN, 0, 0);
+    int curLine = SendMsg(SCI_LINEFROMPOSITION, pos3, 0);
+
+    int mid = firstLine + (lineCount / 2);
+    SendMsg(SCI_LINESCROLL, 0, curLine - mid);
+    return true;
+}
+
+bool SyntaxView::JmpFrontPos(const mstring &str) {
+    return false;
+}
+
+bool SyntaxView::JmpFirstPos(const mstring &str) {
+    return JmpNextPos(str);
+}
+
+bool SyntaxView::JmpLastPos(const mstring &str) {
+    if (str.empty() || mStrInView.empty())
+    {
+        return false;
+    }
+
+    size_t lastPos = 0;
+    for (size_t i = mStrInView.size() - 1 ; i != 0 ; i--) {
+        if (0 == mStrInView.comparei(str, i))
+        {
+            lastPos = i;
+            break;
+        }
+    }
+
+    if (lastPos)
+    {
+        size_t line = SendMsg(SCI_LINEFROMPOSITION, lastPos, 0);
+
+        if (line >= 10)
+        {
+            SendMsg(SCI_LINESCROLL, 0, line - 10);
+        } else {
+            SendMsg(SCI_LINESCROLL, 0, line);
+        }
+        SendMsg(SCI_SETSEL, lastPos, lastPos + str.size());
+        return true;
+    }
+    return false;
+}
+
+bool SyntaxView::SetAutoScroll(bool flag) {
+    mAutoScroll = flag;
+    return true;
+}
+
+void SyntaxView::UpdateView() const {
+    SendMsg(SCI_COLOURISE, 0, -1);
 }

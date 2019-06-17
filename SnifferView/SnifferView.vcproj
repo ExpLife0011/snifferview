@@ -469,6 +469,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\view\StreamDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\view\StreamDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\view\StreamView.cpp"
 				>
 			</File>
