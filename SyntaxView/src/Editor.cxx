@@ -4,7 +4,6 @@
  **/
 // Copyright 1998-2011 by Neil Hodgson <neilh@scintilla.org>
 // The License.txt file describes the conditions under which this software may be distributed.
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -48,7 +47,8 @@
 #include "MarginView.h"
 #include "EditView.h"
 #include "Editor.h"
-#include "../LexVdebug.h"
+#include "../lexers/LexLabel.h"
+#include "../SyntaxLabel.h"
 
 #ifdef SCI_NAMESPACE
 using namespace Scintilla;
@@ -1146,12 +1146,12 @@ Editor::XYScrollPosition Editor::XYScrollToMakeVisible(const SelectionRange &ran
 			const int lineAnchor = DisplayFromPosition(range.anchor.Position());
 			if (lineAnchor < lineCaret) {
 				// Shift up to show anchor or as much of range as possible
-				newXY.topLine = std::min(newXY.topLine, lineAnchor);
-				newXY.topLine = std::max(newXY.topLine, lineCaret - LinesOnScreen());
+				newXY.topLine = min(newXY.topLine, lineAnchor);
+				newXY.topLine = max(newXY.topLine, lineCaret - LinesOnScreen());
 			} else {
 				// Shift down to show anchor or as much of range as possible
-				newXY.topLine = std::max(newXY.topLine, lineAnchor - LinesOnScreen());
-				newXY.topLine = std::min(newXY.topLine, lineCaret);
+				newXY.topLine = max(newXY.topLine, lineAnchor - LinesOnScreen());
+				newXY.topLine = min(newXY.topLine, lineCaret);
 			}
 		}
 		newXY.topLine = Platform::Clamp(newXY.topLine, 0, MaxScrollPos());
@@ -1263,14 +1263,14 @@ Editor::XYScrollPosition Editor::XYScrollToMakeVisible(const SelectionRange &ran
 				// Shift to left to show anchor or as much of range as possible
 				int maxOffset = static_cast<int>(ptAnchor.x + xOffset - rcClient.left) - 1;
 				int minOffset = static_cast<int>(pt.x + xOffset - rcClient.right) + 1;
-				newXY.xOffset = std::min(newXY.xOffset, maxOffset);
-				newXY.xOffset = std::max(newXY.xOffset, minOffset);
+				newXY.xOffset = min(newXY.xOffset, maxOffset);
+				newXY.xOffset = max(newXY.xOffset, minOffset);
 			} else {
 				// Shift to right to show anchor or as much of range as possible
 				int minOffset = static_cast<int>(ptAnchor.x + xOffset - rcClient.right) + 1;
 				int maxOffset = static_cast<int>(pt.x + xOffset - rcClient.left) - 1;
-				newXY.xOffset = std::max(newXY.xOffset, minOffset);
-				newXY.xOffset = std::min(newXY.xOffset, maxOffset);
+				newXY.xOffset = max(newXY.xOffset, minOffset);
+				newXY.xOffset = min(newXY.xOffset, maxOffset);
 			}
 		}
 		if (newXY.xOffset < 0) {
@@ -1416,14 +1416,14 @@ bool Editor::WrapLines(enum wrapScope ws) {
 		wrapPending.Reset();
 
 	} else if (wrapPending.NeedsWrap()) {
-		wrapPending.start = std::min(wrapPending.start, pdoc->LinesTotal());
+		wrapPending.start = min(wrapPending.start, pdoc->LinesTotal());
 		if (!SetIdle(true)) {
 			// Idle processing not supported so full wrap required.
 			ws = wsAll;
 		}
 		// Decide where to start wrapping
 		int lineToWrap = wrapPending.start;
-		int lineToWrapEnd = std::min(wrapPending.end, pdoc->LinesTotal());
+		int lineToWrapEnd = min(wrapPending.end, pdoc->LinesTotal());
 		const int lineDocTop = cs.DocFromDisplay(topLine);
 		const int subLineTop = topLine - cs.DisplayFromDoc(lineDocTop);
 		if (ws == wsVisible) {
@@ -1446,8 +1446,8 @@ bool Editor::WrapLines(enum wrapScope ws) {
 		} else if (ws == wsIdle) {
 			lineToWrapEnd = lineToWrap + LinesOnScreen() + 100;
 		}
-		const int lineEndNeedWrap = std::min(wrapPending.end, pdoc->LinesTotal());
-		lineToWrapEnd = std::min(lineToWrapEnd, lineEndNeedWrap);
+		const int lineEndNeedWrap = min(wrapPending.end, pdoc->LinesTotal());
+		lineToWrapEnd = min(lineToWrapEnd, lineEndNeedWrap);
 
 		// Ensure all lines being wrapped are styled.
 		pdoc->EnsureStyledTo(pdoc->LineStart(lineToWrapEnd));
@@ -1471,7 +1471,7 @@ bool Editor::WrapLines(enum wrapScope ws) {
 					lineToWrap++;
 				}
 
-				goodTopLine = cs.DisplayFromDoc(lineDocTop) + std::min(subLineTop, cs.GetHeight(lineDocTop)-1);
+				goodTopLine = cs.DisplayFromDoc(lineDocTop) + min(subLineTop, cs.GetHeight(lineDocTop)-1);
 			}
 		}
 
@@ -3634,7 +3634,6 @@ long Editor::FindText(
     uptr_t wParam,		///< Search modes : @c SCFIND_MATCHCASE, @c SCFIND_WHOLEWORD,
     ///< @c SCFIND_WORDSTART, @c SCFIND_REGEXP or @c SCFIND_POSIX.
     sptr_t lParam) {	///< @c TextToFind structure: The text to search for in the given range.
-
 	Sci_TextToFind *ft = reinterpret_cast<Sci_TextToFind *>(lParam);
 	int lengthFound = istrlen(ft->lpstrText);
 	if (!pdoc->HasCaseFolder())
@@ -3655,10 +3654,12 @@ long Editor::FindText(
 			ft->chrgText.cpMax = pos + lengthFound;
 		}
 		return static_cast<int>(pos);
+        return 0;
 	} catch (RegexError &) {
 		errorStatus = SC_STATUS_WARN_REGEX;
 		return -1;
 	}
+    return 0;
 }
 
 /**
@@ -5368,19 +5369,6 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			pdoc->InsertString(0, text, istrlen(text));
 			return 1;
 		}
-    case SCI_SET_VDEBUG_TEXT:
-        {
-            //wparam:no used lparam:data
-            ClearVdebugRule();
-            PushVdebugRule((VdebugRuleParam *)lParam);
-        }
-        break;
-    case SCI_APPEND_VDEBUG_TEXT:
-        {
-            //wparam:no used lparam:data
-            PushVdebugRule((VdebugRuleParam *)lParam);
-        }
-        break;
 	case SCI_GETTEXTLENGTH:
 		return pdoc->Length();
 
@@ -7686,6 +7674,40 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_COUNTCHARACTERS:
 		return pdoc->CountCharacters(static_cast<int>(wParam), static_cast<int>(lParam));
 
+    //我们自己定义的label消息
+    //清理label缓存
+    case MSG_LABEL_CLEAR_LABEL:
+        {
+            IDocument *hLabel = pdoc;
+            CSyntaxLabel *mgr = CSyntaxLabel::GetLabelMgr(hLabel);
+            mgr->ClearLabel();
+        }
+        break;
+    //追加label缓存
+    case MSG_LABEL_APPEND_LABEL:
+        {
+            IDocument *hLabel = pdoc;
+            CSyntaxLabel *mgr = CSyntaxLabel::GetLabelMgr(hLabel);
+            mgr->PushLabel((void *)lParam);
+        }
+        break;
+    //注册label解析器
+    case MSG_LABEL_REGISTER_PARSER:
+        {
+            IDocument *hLabel = pdoc;
+            CSyntaxLabel *mgr = CSyntaxLabel::GetLabelMgr(hLabel);
+            mgr->RegisterParser((const LabelParser *)wParam);
+        }
+        break;
+    //设置高亮关键字
+    case MSG_SET_KEYWORK_STR:
+        {
+            IDocument *hLabel = pdoc;
+            CSyntaxLabel *mgr = CSyntaxLabel::GetLabelMgr(hLabel);
+            const char *str = (const char *)wParam;
+            mgr->SetStrKeyword(str);
+        }
+        break;
 	default:
 		return DefWndProc(iMessage, wParam, lParam);
 	}

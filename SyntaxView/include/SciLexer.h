@@ -136,7 +136,7 @@
 #define SCLEX_OBJC 151
 #define SCLEX_USER 152
 
-#define SCLEX_VDEBUG 161
+#define SCLEX_LABEL 161
 #define SCI_VD_STAT_DEFAULT     1       //for default style
 #define SCI_VD_STAT_NUMBER      2       //for number style
 #define SCI_VD_STAT_FUNCTION    3       //for function msg

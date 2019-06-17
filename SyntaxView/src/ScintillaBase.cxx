@@ -750,14 +750,6 @@ const char *LexState::GetSubStyleBases() {
 	}
 	return "";
 }
-
-void LexState::SetLexerLabel(const std::string &label) {
-    if (lexCurrent)
-    {
-        lexCurrent->SetLexerLabel(label);
-    }
-}
-
 #endif
 
 void ScintillaBase::NotifyStyleToNeeded(int endStyleNeeded) {
@@ -977,12 +969,6 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 	case SCI_SETLEXER:
 		DocumentLexState()->SetLexer(static_cast<int>(wParam));
 		break;
-
-    case SCI_SET_LEXER_LABEL:
-        {
-            DocumentLexState()->SetLexerLabel((const char *)wParam);
-        }
-        break;
 	case SCI_GETLEXER:
 		return DocumentLexState()->lexLanguage;
 

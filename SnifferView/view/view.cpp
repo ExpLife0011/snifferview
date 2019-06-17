@@ -52,6 +52,7 @@ static HWND s_splitter = NULL;
 //Óï·¨¹ýÂË´°Ìå
 static HWND gsEditFilter = NULL;
 static HWND gsBtnExp = NULL;;
+static HWND gsWndSniff = NULL;
 
 static HWND s_list = NULL;
 static int s_coord = 0;
@@ -273,6 +274,14 @@ LRESULT CALLBACK PartitionProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                     s_coord = s_toolbar_high + 5;;
                 }
                 */
+                RECT rtList = {0};
+                GetWindowRect(s_list, &rtList);
+                MapWindowPoints(NULL, s_parent, (LPPOINT)&rtList, sizeof(rtList) / sizeof(POINT));
+
+                if (s_coord <= rtList.top)
+                {
+                    s_coord = rtList.top + 5;
+                }
 
                 RECT ct;
                 RECT cl;
@@ -313,6 +322,7 @@ VOID AdustWindowItem()
         //{0, s_toolbar, 0, 0, 1.0f, 0},
         {NULL, gsEditFilter, 0, 0, 1.0f, 0},
         {NULL, gsBtnExp, 1, 0, 0, 0},
+        {NULL, gsWndSniff, 1, 0, 0, 0},
         {IDC_PACKET_LIST, NULL, 0, 0, 1.0f, hs},
         {NULL, s_hex, 0, hs, 1.0f, hk},
         {0, s_splitter, 0, hs, 1, 0},
@@ -628,22 +638,25 @@ VOID InitWindowPos()
     int c_width = client_rect.right - client_rect.left;
     int c_high = client_rect.bottom - client_rect.top;
 
-    //filterEdit, ExpButton
+    //filterEdit, ExpButton, bmpCtrl
     RECT filterRect = {0};
     GetWindowRect(gsEditFilter, &filterRect);
     int filterWidth = filterRect.right - filterRect.left;
     int filterHigh = filterRect.bottom - filterRect.top;
     MapWindowPoints(NULL, g_main_view, (LPPOINT)&filterRect, sizeof(filterRect) / sizeof(POINT));
-    MoveWindow(gsEditFilter, client_rect.left, client_rect.top + pos, c_width - 80, filterHigh, TRUE);
+    MoveWindow(gsEditFilter, client_rect.left, client_rect.top + pos, c_width - 160, filterHigh, TRUE);
 
-    RECT btnRect = {0};
-    GetWindowRect(gsBtnExp, &btnRect);
-    int btnWidth = btnRect.right - btnRect.left;
-    int btnHigh = btnRect.bottom - btnRect.top;
-    MapWindowPoints(NULL, g_main_view, (LPPOINT)&btnRect, sizeof(btnRect) / sizeof(POINT));
-    int btnX = client_rect.left + c_width - 80 + 5;
-    MoveWindow(gsBtnExp, btnX, filterRect.top, btnWidth, filterHigh, TRUE);
-    pos += (filterHigh + 1);
+    //button, image
+    RECT rt1, rt2;
+    GetWindowRect(gsEditFilter, &rt1);
+    GetWindowRect(gsBtnExp, &rt2);
+    MapWindowPoints(NULL, g_main_view, (LPPOINT)&rt1, 2);
+    MapWindowPoints(NULL, g_main_view, (LPPOINT)&rt2, 2);
+    SetWindowPos(gsBtnExp, 0, rt1.right + 10, rt1.top, rt2.right - rt2.left, rt1.bottom - rt1.top, SWP_NOZORDER);
+    GetWindowRect(gsBtnExp, &rt2);
+    MapWindowPoints(NULL, g_main_view, (LPPOINT)&rt2, 2);
+    SetWindowPos(gsWndSniff, 0, rt2.right + 10, rt2.top + 5, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+    pos += (filterHigh + 5);
 
     //listctrl
     RECT list_rect;
@@ -761,7 +774,6 @@ static void _InitSniffer() {
         ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
     }
     LoadLibraryA(dllPath.c_str());
-    SyntaxParser::GetInstance()->InitParser();
 }
 
 VOID OnInitDialog(HWND hdlg)
@@ -771,6 +783,7 @@ VOID OnInitDialog(HWND hdlg)
     s_spy_pen = CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
     SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
     s_status = CreateStatusBar(hdlg);
+    gsWndSniff = GetDlgItem(hdlg, IDC_CTRL_WND_SNIFF);
     RegistPartlClass();
 
     gsEditFilter = GetDlgItem(hdlg, IDC_EDT_FILTER);

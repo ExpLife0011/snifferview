@@ -132,6 +132,12 @@ public:
 				return startNext - 1;
 		}
 	}
+
+    //获取IDocument,仅用解析索引,没有其他作用
+    const IDocument *GetIDocPtr() {
+        return pAccess;
+    }
+
 	int LevelAt(int line) const {
 		return pAccess->GetLevel(line);
 	}

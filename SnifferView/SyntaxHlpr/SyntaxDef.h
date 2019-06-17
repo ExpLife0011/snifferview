@@ -1,9 +1,12 @@
 #ifndef SYNTAXDEF_COMLIB_H_H_
 #define SYNTAXDEF_COMLIB_H_H_
 
-#define SCI_LABEL_DEFAULT       "Default"
-#define SCI_LABEL_TCP_PIPE1     "TcpPipe1"
-#define SCI_LABEL_TCP_PIPE2     "TcpPipe2"
+#define LABEL_DEFAULT       "Default"
+#define LABEL_LOG_CONTENT   "LogContent"
+#define LABEL_DBG_CONTENT   "DbgContent"
+#define LABEL_CALLSTACK     "CallStack"
+#define LABEL_TCP_PIPE1     "TcpPipe1"
+#define LABEL_TCP_PIPE2     "TcpPipe2"
 
 #define SCI_PARSER_STAT_DEFAULT     1       //for default style
 #define SCI_PARSER_STAT_NUMBER      2       //for number style
@@ -24,7 +27,16 @@
 #define SCI_PARSER_STAT_KEYWORD     17
 #define SCI_PARSER_STAT_HIGHT       18
 
-//tcp stream
-#define SCI_PARSER_STAT_TCP_PIPE1   101
-#define SCI_PARSER_STAT_TCP_PIPE2   102
+//log content stat
+#define STAT_CONTENT    101
+#define STAT_FILTER     102
+#define STAT_KEYWORD    121
+#define STAT_SELECT     124
+#define STAT_ERROR      131
+
+#define STAT_TCP_PIPE1  301
+#define STAT_TCP_PIPE2  302
+
+#define NOTE_KEYWORD    SCE_UNIVERSAL_FOUND_STYLE_EXT1      //关键字高亮
+#define NOTE_SELECT     SCE_UNIVERSAL_FOUND_STYLE_EXT2      //选择高亮
 #endif //SYNTAXDEF_COMLIB_H_H_

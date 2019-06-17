@@ -50,15 +50,6 @@ public:
 	}
 	int GetLanguage() const { return language; }
 
-    //为解析设置提示标签
-    static void SetLexerLabel(const std::string &label) {
-        ms_LexerLabel = label;
-    }
-
-    static std::string GetLexerLabel() {
-        return ms_LexerLabel;
-    }
-
 	// -1 is returned if no WordList information is available
 	int GetNumWordLists() const;
 	const char *GetWordListDescription(int index) const;

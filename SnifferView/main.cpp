@@ -21,6 +21,7 @@
 #include "iocp_server.h"
 #include "view/netstat.h"
 #include "sfvserv.h"
+#include "StrUtil.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "Advapi32.lib")
@@ -42,7 +43,7 @@ SECURITY_DESCRIPTOR g_sd;
 static BOOL _AnalysisCmd()
 {
 	const char *cmd = GetCommandLineA();
-	ustring um(cmd);
+	ustring um = AtoW(cmd);
 	int count = 0;
 	BOOL state = FALSE;
 	do 
@@ -70,7 +71,7 @@ static BOOL _AnalysisCmd()
 		}
 		else
 		{
-			mstring vm(args[1]);
+			mstring vm = WtoA(args[1]);
 			vm.makelower();
 			if (vm == "/s" || vm == "-s")
 			{
@@ -83,7 +84,7 @@ static BOOL _AnalysisCmd()
 				g_work_state = em_analysis;
 				if (count > 2)
 				{
-					g_sniffer_file = args[2];
+					g_sniffer_file = WtoA(args[2]);
 				}
 				state = TRUE;
 				g_config_path = REG_ANALYSIS_CONFIG_PATH;

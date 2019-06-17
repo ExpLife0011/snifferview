@@ -86,6 +86,7 @@
 #define IDC_ABOUT_ICO                   1045
 #define IDC_ABOUT_VER                   1046
 #define IDC_STREAM_SELECT               1050
+#define IDC_CTRL_WND_SNIFF              1051
 #define ID_40003                        40003
 #define ID_40004                        40004
 #define ID_40005                        40005
@@ -141,7 +142,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40048
-#define _APS_NEXT_CONTROL_VALUE         1051
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

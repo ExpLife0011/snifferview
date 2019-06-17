@@ -11,6 +11,7 @@
 #ifdef SCI_NAMESPACE
 namespace Scintilla {
 #endif
+#include "../SyntaxLabel.h"
 
 #ifdef _WIN32
 	#define SCI_METHOD __stdcall
@@ -22,6 +23,14 @@ enum { dvOriginal=0, dvLineEnd=1 };
 
 class IDocument {
 public:
+    IDocument() {
+        CSyntaxLabel::RegisterLabel(this);
+    }
+
+    virtual ~IDocument() {
+        CSyntaxLabel::UnRegisterLabel(this);
+    }
+
 	virtual int SCI_METHOD Version() const = 0;
 	virtual void SCI_METHOD SetErrorStatus(int status) = 0;
 	virtual int SCI_METHOD Length() const = 0;

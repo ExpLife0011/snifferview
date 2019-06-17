@@ -40,7 +40,6 @@ bool CStreamView::DoModule(HWND parent) {
 }
 
 void CStreamView::InitSyntaxView() {
-    mShowView.SendMsg(SCI_SETLEXER, SCLEX_VDEBUG, 0);
     mShowView.ShowMargin(false);
     mShowView.SetCaretColour(RGB(255, 255, 255));
 
@@ -52,8 +51,8 @@ void CStreamView::InitSyntaxView() {
     mShowView.ShowVsScrollBar(true);
     mShowView.ShowHsScrollBar(true);
 
-    mShowView.SetStyle(SCI_PARSER_STAT_TCP_PIPE1, RGB(202, 255, 112), RGB(40, 40, 40));
-    mShowView.SetStyle(SCI_PARSER_STAT_TCP_PIPE2, RGB(151, 255, 255), RGB(40, 40, 40));
+    mShowView.SetStyle(STAT_TCP_PIPE1, RGB(202, 255, 112), RGB(40, 40, 40));
+    mShowView.SetStyle(STAT_TCP_PIPE2, RGB(151, 255, 255), RGB(40, 40, 40));
     mShowView.SetDefStyle(RGB(255, 0, 0), RGB(40, 40, 40));
 
     mShowView.ShowCaretLine(true, RGB(60, 56, 54));
@@ -300,9 +299,9 @@ void CStreamView::LoadPacketSet(int type) {
         mstring desc;
         if (ptr->m_dec_mark == mUnique1)
         {
-            desc = SCI_LABEL_TCP_PIPE1;
+            desc = LABEL_TCP_PIPE1;
         } else {
-            desc = SCI_LABEL_TCP_PIPE2;
+            desc = LABEL_TCP_PIPE2;
         }
 
         mstring showData = ptr->m_packet.substr(offset, ptr->m_packet.size() - offset);

@@ -489,15 +489,19 @@
 			Name="SyntaxHlpr"
 			>
 			<File
+				RelativePath=".\SyntaxHlpr\export.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxCache.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxCache.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SyntaxHlpr\SyntaxDef.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SyntaxHlpr\SyntaxParser.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SyntaxHlpr\SyntaxParser.h"
 				>
 			</File>
 			<File
