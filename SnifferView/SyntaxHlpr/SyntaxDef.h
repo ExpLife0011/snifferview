@@ -8,31 +8,19 @@
 #define LABEL_TCP_PIPE1     "TcpPipe1"
 #define LABEL_TCP_PIPE2     "TcpPipe2"
 
-#define SCI_PARSER_STAT_DEFAULT     1       //for default style
-#define SCI_PARSER_STAT_NUMBER      2       //for number style
-#define SCI_PARSER_STAT_FUNCTION    3       //for function msg
-#define SCI_PARSER_STAT_ADDR        4
-#define SCI_PARSER_STAT_REGISTER    5
-#define SCI_PARSER_STAT_ERROR       6
-#define SCI_PARSER_STAT_MESSAGE     7
-#define SCI_PARSER_STAT_HEX         8
-#define SCI_PARSER_STAT_DATA        9
-#define SCI_PARSER_STAT_BYTE        10
-#define SCI_PARSER_STAT_INST        11
-#define SCI_PARSER_STAT_CALL        12
-#define SCI_PARSER_STAT_JMP         13
-#define SCI_PARSER_STAT_PROC        14
-#define SCI_PARSER_STAT_MODULE      15
-#define SCI_PARSER_STAT_PARAM       16
-#define SCI_PARSER_STAT_KEYWORD     17
-#define SCI_PARSER_STAT_HIGHT       18
-
-//log content stat
-#define STAT_CONTENT    101
-#define STAT_FILTER     102
-#define STAT_KEYWORD    121
-#define STAT_SELECT     124
-#define STAT_ERROR      131
+/*
+20190618
+STYLE 用于设置字体的颜色等属性，需要注意,最大的STYLE值是256,
+超过这个值会导致设置的颜色属性无效，STYLE_DEFAULT = 32
+我们的范围从101开始设置
+*/
+#define STYLE_CONTENT    101
+#define STYLE_FILTER     102
+#define STYLE_KEYWORD    121
+#define STYLE_SELECT     124
+#define STYLE_ERROR      131
+#define STYLE_TCP_PIPE1  132    //tcp流样式1
+#define STYLE_TCP_PIPE2  133    //tcp流样式2
 
 #define NOTE_KEYWORD    SCE_UNIVERSAL_FOUND_STYLE_EXT1      //关键字高亮
 #define NOTE_SELECT     SCE_UNIVERSAL_FOUND_STYLE_EXT2      //选择高亮
