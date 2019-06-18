@@ -2099,6 +2099,7 @@ static void _OnSetFilter() {
         }
     }
 
+    g_show_string = str;
     if (IsShowRulesDif(fltRule))
     {
         SaveFilterConfig();
