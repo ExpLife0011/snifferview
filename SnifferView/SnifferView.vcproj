@@ -445,6 +445,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\view\FilterEdit.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\view\FilterEdit.h"
+				>
+			</File>
+			<File
 				RelativePath=".\view\hex.cpp"
 				>
 			</File>
@@ -513,11 +521,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SyntaxHlpr\SyntaxView.cpp"
+				RelativePath=".\SyntaxHlpr\SyntaxEditView.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SyntaxHlpr\SyntaxView.h"
+				RelativePath=".\SyntaxHlpr\SyntaxTextView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SyntaxHlpr\SyntaxTextView.h"
 				>
 			</File>
 		</Filter>

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <SyntaxView/include/Scintilla.h>
 #include <SyntaxView/include/SciLexer.h>
-#include "SyntaxView.h"
+#include "SyntaxTextView.h"
 #include "common.h"
 
 #pragma comment(lib, "shlwapi.lib")
@@ -12,10 +12,10 @@ using namespace std;
 
 typedef int (* SCINTILLA_FUNC) (void*, int, int, int);
 typedef void * SCINTILLA_PTR;
-map<HWND, SyntaxView *> SyntaxView::msWinProcCache;
-CCriticalSectionLockable *SyntaxView::msLocker = NULL;
+map<HWND, SyntaxTextView *> SyntaxTextView::msWinProcCache;
+CCriticalSectionLockable *SyntaxTextView::msLocker = NULL;
 
-SyntaxView::SyntaxView() {
+SyntaxTextView::SyntaxTextView() {
     mLineNum = false;
     mAutoScroll = false;
     mParentProc = NULL;
@@ -26,14 +26,14 @@ SyntaxView::SyntaxView() {
     }
 }
 
-bool SyntaxView::ClearHighLight() {
+bool SyntaxTextView::ClearHighLight() {
     mHighLight.clear();
 
     OnViewUpdate();
     return true;
 }
 
-void SyntaxView::OnViewUpdate() const {
+void SyntaxTextView::OnViewUpdate() const {
     size_t length = SendMsg(SCI_GETTEXTLENGTH, 0, 0);
     SendMsg(SCI_SETINDICATORCURRENT, NOTE_KEYWORD, 0);
     SendMsg(SCI_INDICATORCLEARRANGE, 0, length);
@@ -69,7 +69,7 @@ void SyntaxView::OnViewUpdate() const {
     }
 }
 
-INT_PTR SyntaxView::OnNotify(HWND hdlg, WPARAM wp, LPARAM lp) {
+INT_PTR SyntaxTextView::OnNotify(HWND hdlg, WPARAM wp, LPARAM lp) {
     NotifyHeader *header = (NotifyHeader *)lp;
     SCNotification *notify = (SCNotification *)lp;
 
@@ -90,11 +90,11 @@ INT_PTR SyntaxView::OnNotify(HWND hdlg, WPARAM wp, LPARAM lp) {
     return 0;
 }
 
-LRESULT SyntaxView::WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
-    SyntaxView *ptr = NULL;
+LRESULT SyntaxTextView::WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+    SyntaxTextView *ptr = NULL;
     {
         CScopedLocker locker(msLocker);
-        map<HWND, SyntaxView *>::iterator it = msWinProcCache.find(hwnd);
+        map<HWND, SyntaxTextView *>::iterator it = msWinProcCache.find(hwnd);
         if (it != msWinProcCache.end())
         {
             ptr = it->second;
@@ -123,7 +123,7 @@ LRESULT SyntaxView::WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     return CallWindowProc(pfnOldProc, hwnd, msg, wp, lp);;
 }
 
-bool SyntaxView::CreateView(HWND parent, int x, int y, int cx, int cy) {
+bool SyntaxTextView::CreateView(HWND parent, int x, int y, int cx, int cy) {
     mLineNum = false;
     mLineCount = 0;
     m_parent = parent;
@@ -166,7 +166,7 @@ bool SyntaxView::CreateView(HWND parent, int x, int y, int cx, int cy) {
     return (TRUE == IsWindow(m_hwnd));
 }
 
-bool SyntaxView::RegisterParser(const mstring &label, pfnLabelParser parser, void *param) {
+bool SyntaxTextView::RegisterParser(const mstring &label, pfnLabelParser parser, void *param) {
     if (!IsWindow(m_hwnd))
     {
         return false;
@@ -180,29 +180,29 @@ bool SyntaxView::RegisterParser(const mstring &label, pfnLabelParser parser, voi
     return true;
 }
 
-SyntaxView::~SyntaxView() {
+SyntaxTextView::~SyntaxTextView() {
 }
 
-size_t SyntaxView::SendMsg(UINT msg, WPARAM wp, LPARAM lp) const {
+size_t SyntaxTextView::SendMsg(UINT msg, WPARAM wp, LPARAM lp) const {
     return m_pfnSend(m_param, msg, wp, lp);
 }
 
-void SyntaxView::ClearView() {
+void SyntaxTextView::ClearView() {
     SetText(LABEL_DEFAULT, "");
 }
 
-bool SyntaxView::AddHighLight(const std::mstring &keyWord, DWORD colour) {
+bool SyntaxTextView::AddHighLight(const std::mstring &keyWord, DWORD colour) {
     mHighLight[keyWord] = colour;
     OnViewUpdate();
     return true;
 }
 
-void SyntaxView::SetStyle(int type, unsigned int textColour, unsigned int backColour) {
+void SyntaxTextView::SetStyle(int type, unsigned int textColour, unsigned int backColour) {
     SendMsg(SCI_STYLESETFORE, type, textColour);
     SendMsg(SCI_STYLESETBACK, type, backColour);
 }
 
-void SyntaxView::ShowMargin(bool bShow) {
+void SyntaxTextView::ShowMargin(bool bShow) {
     if (bShow)
     {
     } else {
@@ -211,7 +211,7 @@ void SyntaxView::ShowMargin(bool bShow) {
     }
 }
 
-void SyntaxView::ShowCaretLine(bool show, unsigned int colour) {
+void SyntaxTextView::ShowCaretLine(bool show, unsigned int colour) {
     if (show)
     {
         SendMsg(SCI_SETCARETLINEVISIBLE, TRUE, 0);
@@ -223,48 +223,48 @@ void SyntaxView::ShowCaretLine(bool show, unsigned int colour) {
     }
 }
 
-void SyntaxView::SetDefStyle(unsigned int textColour, unsigned int backColour) {
+void SyntaxTextView::SetDefStyle(unsigned int textColour, unsigned int backColour) {
     SendMsg(SCI_STYLESETFORE, STYLE_DEFAULT, textColour);
     SendMsg(SCI_STYLESETBACK, STYLE_DEFAULT, backColour);
 }
 
-void SyntaxView::ShowVsScrollBar(bool show) {
+void SyntaxTextView::ShowVsScrollBar(bool show) {
     SendMsg(SCI_SETHSCROLLBAR, show, 0);
 }
 
-void SyntaxView::ShowHsScrollBar(bool show) {
+void SyntaxTextView::ShowHsScrollBar(bool show) {
     SendMsg(SCI_SETHSCROLLBAR, show, 0);
 }
 
-void SyntaxView::SetFont(const std::string &fontName) {
+void SyntaxTextView::SetFont(const std::string &fontName) {
     SendMsg(SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)fontName.c_str());
 }
 
-void SyntaxView::SetCaretColour(unsigned int colour) {
+void SyntaxTextView::SetCaretColour(unsigned int colour) {
     SendMsg(SCI_SETCARETFORE, (WPARAM)colour, 0);
 }
 
-void SyntaxView::SetCaretSize(int size) {
+void SyntaxTextView::SetCaretSize(int size) {
     SendMsg(SCI_SETCARETWIDTH, (WPARAM)size, 0);
 }
 
-void SyntaxView::SetFontWeight(int weight) {
+void SyntaxTextView::SetFontWeight(int weight) {
     SendMsg(SCI_STYLESETWEIGHT, STYLE_DEFAULT, weight);
 }
 
-int SyntaxView::GetFontWeight() {
+int SyntaxTextView::GetFontWeight() {
     return SendMsg(SCI_STYLEGETWEIGHT, STYLE_DEFAULT, 0);
 }
 
-unsigned int SyntaxView::GetCaretColour() {
+unsigned int SyntaxTextView::GetCaretColour() {
     return 0;
 }
 
-int SyntaxView::SetScrollEndLine() {
+int SyntaxTextView::SetScrollEndLine() {
     return SendMsg(SCI_SCROLLTOEND, 0, 0);
 }
 
-void SyntaxView::CheckLineNum() {
+void SyntaxTextView::CheckLineNum() {
     if (!mLineNum)
     {
         return;
@@ -300,7 +300,7 @@ void SyntaxView::CheckLineNum() {
     mLineCount = cur;
 }
 
-void SyntaxView::ResetLineNum() {
+void SyntaxTextView::ResetLineNum() {
     if (!mLineNum)
     {
         return;
@@ -313,7 +313,7 @@ void SyntaxView::ResetLineNum() {
     CheckLineNum();
 }
 
-void SyntaxView::AppendText(const std::mstring &label, const std::mstring &text) {
+void SyntaxTextView::AppendText(const std::mstring &label, const std::mstring &text) {
     LabelNode param;
     param.m_label = label.c_str();
     param.m_content = text.c_str();
@@ -339,7 +339,7 @@ void SyntaxView::AppendText(const std::mstring &label, const std::mstring &text)
     }
 }
 
-void SyntaxView::SetLineNum(bool lineNum) {
+void SyntaxTextView::SetLineNum(bool lineNum) {
     mLineNum = lineNum;
 
     if (mLineNum)
@@ -361,7 +361,7 @@ void SyntaxView::SetLineNum(bool lineNum) {
     }
 }
 
-void SyntaxView::SetText(const std::mstring &label, const std::mstring &text) {
+void SyntaxTextView::SetText(const std::mstring &label, const std::mstring &text) {
     LabelNode param;
     param.m_label = label.c_str();
     param.m_content = text.c_str();
@@ -384,7 +384,7 @@ void SyntaxView::SetText(const std::mstring &label, const std::mstring &text) {
     }
 }
 
-mstring SyntaxView::GetText() const {
+mstring SyntaxTextView::GetText() const {
     int length = SendMsg(SCI_GETLENGTH, 0, 0);
 
     MemoryAlloc<char> alloc;
@@ -395,7 +395,7 @@ mstring SyntaxView::GetText() const {
 }
 
 //从当前选中的位置开始向后查找.如果没有,从当前可见页开始查找
-bool SyntaxView::JmpNextPos(const mstring &str) {
+bool SyntaxTextView::JmpNextPos(const mstring &str) {
     int pos1 = SendMsg(SCI_GETSELECTIONSTART, 0, 0);
     int pos2 = SendMsg(SCI_GETSELECTIONEND, 0, 0);
 
@@ -427,15 +427,15 @@ bool SyntaxView::JmpNextPos(const mstring &str) {
     return true;
 }
 
-bool SyntaxView::JmpFrontPos(const mstring &str) {
+bool SyntaxTextView::JmpFrontPos(const mstring &str) {
     return false;
 }
 
-bool SyntaxView::JmpFirstPos(const mstring &str) {
+bool SyntaxTextView::JmpFirstPos(const mstring &str) {
     return JmpNextPos(str);
 }
 
-bool SyntaxView::JmpLastPos(const mstring &str) {
+bool SyntaxTextView::JmpLastPos(const mstring &str) {
     if (str.empty() || mStrInView.empty())
     {
         return false;
@@ -466,11 +466,11 @@ bool SyntaxView::JmpLastPos(const mstring &str) {
     return false;
 }
 
-bool SyntaxView::SetAutoScroll(bool flag) {
+bool SyntaxTextView::SetAutoScroll(bool flag) {
     mAutoScroll = flag;
     return true;
 }
 
-void SyntaxView::UpdateView() const {
+void SyntaxTextView::UpdateView() const {
     SendMsg(SCI_COLOURISE, 0, -1);
 }

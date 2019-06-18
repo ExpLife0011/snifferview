@@ -19,7 +19,7 @@ CSyntaxCache::~CSyntaxCache() {
 bool CSyntaxCache::InitCache(int interval) {
     mInterval = interval;
 
-    HWND hwnd = SyntaxView::GetWindow();
+    HWND hwnd = SyntaxTextView::GetWindow();
     assert(IsWindow(hwnd));
 
     msTimerCache[hwnd] = this;

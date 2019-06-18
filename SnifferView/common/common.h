@@ -182,4 +182,6 @@ private:
     T *mBuffer;
     int mSize;
 };
+
+mstring GetWindowStrA(HWND hwnd);
 #endif

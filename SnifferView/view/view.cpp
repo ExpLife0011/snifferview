@@ -36,9 +36,10 @@
 #define MSG_STATUS_PACKETS_COUNT        (WM_USER + 10052)   //封包数量
 #define MSG_STATUS_SELECTMSG            (WM_USER + 10053)   //选择高亮范围
 #define MSG_STATUS_VALUE                (WM_USER + 10054)   //选择的数值
-#define  MSG_LOAD_PACKETFILE            (WM_USER + 10055)   //加载封包数据文件
+#define MSG_LOAD_PACKETFILE             (WM_USER + 10055)   //加载封包数据文件
 
 #define MSG_INTERNAL_RBUTTONUP          (WM_USER + 10071)   //鼠标右键弹起，wp:窗口句柄 lp:备用
+#define MSG_SET_FILTER                  (WM_USER + 10081)   //过滤规则生效
 
 mstring g_def_dir;
 
@@ -73,6 +74,14 @@ RECT s_search_rect = {0};
 //
 static BOOL s_window_capter = FALSE;
 static HWND s_cur_capter_window = NULL;
+
+//Filter Edit
+static DWORD gsRightColour = RGB(175, 255, 175);
+static DWORD gsErrorColour = RGB(255, 175, 175);
+static HBRUSH gsBrushRight = NULL;
+static HBRUSH gsBrushError = NULL;
+static HHOOK gsKeyboardHook = NULL;
+static DWORD gsEditMode = 0;    //0:righit 1:faild
 
 //dlg控件窗口回调
 typedef LRESULT (CALLBACK *PWIN_PROC)(HWND, UINT, WPARAM, LPARAM);
@@ -759,7 +768,7 @@ static void _InitSniffer() {
 #ifdef _DEBUG
     GetModuleFileNameA(NULL, installDir, 256);
     dllPath = installDir;
-    dllPath.path_append("..\\SyntaxView.dll");
+    dllPath.path_append("..\\SyntaxTextView.dll");
 #else
     GetWindowsDirectoryA(installDir, 256);
 
@@ -767,13 +776,83 @@ static void _InitSniffer() {
 
     dllPath = installDir;
     SHCreateDirectoryExA(NULL, dllPath.c_str(), NULL);
-    dllPath.path_append("SyntaxView.dll");
+    dllPath.path_append("SyntaxTextView.dll");
 #endif
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
     {
         ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
     }
     LoadLibraryA(dllPath.c_str());
+}
+
+//Filter Edit Init
+static void _InitFilterEdit() {
+    gsBrushRight = CreateSolidBrush(gsRightColour);
+    gsBrushError = CreateSolidBrush(gsErrorColour);
+
+    LOGFONTA lf = {0}; 
+    lf.lfHeight = 16;
+    lstrcpyA(lf.lfFaceName, "Courier New");
+
+    HFONT hFont = CreateFontIndirectA(&lf);
+    SendMessageA(gsEditFilter, WM_SETFONT, (WPARAM)hFont, TRUE);
+    SetFocus(gsEditFilter);
+    SetWindowTextA(gsEditFilter, g_show_string.c_str());
+
+    int len = GetWindowTextLengthA(gsEditFilter);
+    SendMessageA(gsEditFilter, EM_SETSEL, len, len);
+}
+
+static HANDLE gsRuleCheckNotify = CreateEventA(NULL, FALSE, FALSE, NULL);
+static DWORD WINAPI _FilterRuleThread(LPVOID param) {
+    while (true) {
+        WaitForSingleObject(gsRuleCheckNotify, 500);
+
+        static mstring sStrLastRule;
+        mstring str = GetWindowStrA(gsEditFilter);
+        str.trim();
+
+        if (sStrLastRule != str)
+        {
+            if (str.empty())
+            {
+                gsEditMode = 0;
+            } else {
+                list<FilterRules> showRules;
+                if (RulesCompile(str.c_str(), showRules))
+                {
+                    gsEditMode = 0;
+                } else {
+                    gsEditMode = 1;
+                }
+            }
+            sStrLastRule = str;
+            InvalidateRect(gsEditFilter, NULL, TRUE);
+        }
+    }
+}
+
+static void _NoitfyFilterCheck() {
+    SetEvent(gsRuleCheckNotify);
+}
+
+static LRESULT CALLBACK _KeyCaptureProc(int code, WPARAM wp, LPARAM lp) {
+    if (code < 0)
+    {
+        return CallNextHookEx(gsKeyboardHook, code, wp, lp);
+    }
+
+    if (GetFocus() == gsEditFilter)
+    {
+        _NoitfyFilterCheck();
+        dp(L"key:%d", wp);
+
+        if (wp == '\r')
+        {
+            SendMessageA(g_main_view, MSG_SET_FILTER, 0, 0);
+        }
+    }
+    return CallNextHookEx(gsKeyboardHook, code, wp, lp);
 }
 
 VOID OnInitDialog(HWND hdlg)
@@ -787,8 +866,11 @@ VOID OnInitDialog(HWND hdlg)
     RegistPartlClass();
 
     gsEditFilter = GetDlgItem(hdlg, IDC_EDT_FILTER);
-    gsBtnExp = GetDlgItem(hdlg, IDC_BTN_EXP);
+    _InitFilterEdit();
+    gsKeyboardHook = SetWindowsHookExA(WH_KEYBOARD, _KeyCaptureProc, NULL, GetCurrentThreadId());
+    CloseHandle(CreateThread(NULL, 0, _FilterRuleThread, NULL, 0, NULL));
 
+    gsBtnExp = GetDlgItem(hdlg, IDC_BTN_EXP);
     s_splitter = CreateWindowExA(NULL, s_partition_class_name, "", WS_VISIBLE | WS_CHILD, 10, 0, 0, 0, hdlg, NULL, g_m, NULL);
     s_list = GetDlgItem(hdlg, IDC_PACKET_LIST);
     s_hex = CreateHexView(hdlg, 0, 0);
@@ -1992,8 +2074,39 @@ VOID OnLButtonUp(HWND hdlg, WPARAM wp, LPARAM lp)
 static VOID OnPacketsOverFlow()
 {
     SendMessageW(g_main_view, WM_COMMAND, POPU_MENU_ITEM_SUSPEND_ID, 0);
-
     MessageBoxW(g_main_view, L"封包数量超出最大数量,已暂停嗅探,请及时进行清理", L"封包数量过多", MB_OK | MB_ICONWARNING);
+}
+
+//过滤规则生效
+static void _OnSetFilter() {
+    static mstring sLastRule = "abcdef1234";
+
+    mstring str = GetWindowStrA(gsEditFilter);
+    str.trim();
+
+    if (str == sLastRule)
+    {
+        return;
+    }
+
+    sLastRule = str;
+    list<FilterRules> fltRule;
+    if (!str.empty())
+    {
+        if (!RulesCompile(str.c_str(), fltRule))
+        {
+            return;
+        }
+    }
+
+    if (IsShowRulesDif(fltRule))
+    {
+        SaveFilterConfig();
+        ChangeShowRules(fltRule);
+        RecheckShowPacket();
+
+        NoticefSnifferViewRefush();
+    }
 }
 
 DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -2048,6 +2161,11 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
     case  MSG_PACKETS_OVERFLOW:
         {
             OnPacketsOverFlow();
+        }
+        break;
+    case  MSG_SET_FILTER:
+        {
+            _OnSetFilter();
         }
         break;
     case  WM_MOUSEMOVE:
@@ -2108,6 +2226,22 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
     case  MSG_ACTIVE_WINDOW:
         {
             OnAcitveWindow();
+        }
+        break;
+    case  WM_CTLCOLOREDIT:
+        {
+            if (gsEditFilter == (HWND)lp)
+            {
+                HDC dc = (HDC)wp;
+                if (0 == gsEditMode)
+                {
+                    SetBkColor(dc, gsRightColour);
+                    return (INT_PTR)gsBrushRight;
+                } else {
+                    SetBkColor(dc, gsErrorColour);
+                    return (INT_PTR)gsBrushError;
+                }
+            }
         }
         break;
     case  WM_CLOSE:

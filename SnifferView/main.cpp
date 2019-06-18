@@ -193,11 +193,12 @@ static BOOL _InstallSnifferServ()
 
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
+    /*
     LoadLibraryA("SyntaxView.dll");
     ShowStreamView(NULL, 0);
     MessageBoxA(0, 0, 0, 0);
     return 0;
-
+    */
     dp(L"SnifferViewÆô¶¯²ÎÊý£º%ls", GetCommandLineW());
 	g_m = m;
 	if (!_AnalysisCmd())

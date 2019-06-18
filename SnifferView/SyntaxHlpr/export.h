@@ -1,5 +1,5 @@
-#ifndef EXPORT_SYNTAXVIEW_H_H_
-#define EXPORT_SYNTAXVIEW_H_H_
+#ifndef EXPORT_SyntaxTextView_H_H_
+#define EXPORT_SyntaxTextView_H_H_
 
 struct LabelNode {
     const char *m_label;
@@ -52,4 +52,4 @@ typedef void (__stdcall *pfnColouriseTextProc)(
     );
 
 void __stdcall RegisterSyntaxProc(const char *label, pfnColouriseTextProc pfn);
-#endif //EXPORT_SYNTAXVIEW_H_H_
+#endif //EXPORT_SyntaxTextView_H_H_

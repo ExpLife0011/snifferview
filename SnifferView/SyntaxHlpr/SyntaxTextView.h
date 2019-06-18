@@ -23,7 +23,7 @@ typedef void (__stdcall *pfnLabelParser)(
 
 #define SCLEX_LABEL 161
 //LabelParser消息
-//为SyntaxView注册解析器
+//为SyntaxTextView注册解析器
 //wparem : LabelParser
 //lparam : no used
 /*
@@ -45,12 +45,12 @@ struct LabelParser {
 
 typedef LRESULT (CALLBACK *PWIN_PROC)(HWND, UINT, WPARAM, LPARAM);
 
-class SyntaxView : public CCriticalSectionLockable {
+class SyntaxTextView : public CCriticalSectionLockable {
 public:
-    SyntaxView();
-    virtual ~SyntaxView();
+    SyntaxTextView();
+    virtual ~SyntaxTextView();
 
-    //SyntaxView Create
+    //SyntaxTextView Create
     bool CreateView(HWND parent, int x, int y, int cx, int cy);
     //Parser Register
     bool RegisterParser(const std::mstring &label, pfnLabelParser parser, void *param);
@@ -98,7 +98,6 @@ public:
     int GetFontWeight();
     unsigned int GetCaretColour();
     int SetScrollEndLine();
-
 private:
     void OnViewUpdate() const;
     INT_PTR OnNotify(HWND hdlg, WPARAM wp, LPARAM lp);
@@ -109,7 +108,7 @@ private:
 private:
     PWIN_PROC mParentProc;
     static CCriticalSectionLockable *msLocker;
-    static std::map<HWND, SyntaxView *> msWinProcCache;
+    static std::map<HWND, SyntaxTextView *> msWinProcCache;
 
     bool mLineNum;
     int mLineCount;

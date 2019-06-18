@@ -3,12 +3,12 @@
 #include <list>
 #include <map>
 #include <vector>
-#include "SyntaxView.h"
+#include "SyntaxTextView.h"
 #include "export.h"
 #include "mstring.h"
 #include "LockBase.h"
 
-class CSyntaxCache : public SyntaxView {
+class CSyntaxCache : public SyntaxTextView {
 public:
     CSyntaxCache();
     virtual ~CSyntaxCache();

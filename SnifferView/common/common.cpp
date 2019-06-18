@@ -1680,3 +1680,24 @@ mstring GetPrintStr(const char *szBuffer, int iSize, bool mulitLine)
     }
     return strOut;
 }
+
+mstring GetWindowStrA(HWND hwnd) {
+    if (!IsWindow(hwnd))
+    {
+        return "";
+    }
+
+    char buffer[256];
+    buffer[0] = 0;
+    int size = GetWindowTextLength(hwnd);
+    if (size < 256)
+    {
+        GetWindowTextA(hwnd, buffer, 256);
+        return buffer;
+    } else {
+        MemoryAlloc<char> alloc;
+        char *ptr = alloc.GetMemory(size + 4);
+        GetWindowTextA(hwnd, ptr, size + 4);
+        return ptr;
+    }
+}

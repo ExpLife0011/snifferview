@@ -1364,9 +1364,11 @@ VOID InitFilterConfig()
 		RulesCompile(g_show_string.c_str(), s_show_policy);
 	}
 
+    /*
 	if (g_filter_string.size() > 0)
 	{
 		RulesCompile(g_filter_string.c_str(), s_filter_policy);
 	}
+    */
 	UNLOCK_RULES;
 }

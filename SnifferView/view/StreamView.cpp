@@ -33,6 +33,7 @@ void CStreamView::InitStreamView(HWND hParent, int x, int y, int cx, int cy) {
     RegisterParser(LABEL_TCP_PIPE1, TcpPipe1Parser, this);
     RegisterParser(LABEL_TCP_PIPE2, TcpPipe2Parser, this);
 
+    //×Ô¶¯»»ÐÐ
     SendMsg(SCI_SETWRAPMODE, 1, 1);
 }
 

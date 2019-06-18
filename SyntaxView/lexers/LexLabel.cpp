@@ -1,5 +1,5 @@
 /**
-LexVdebug Syntax Rule by lougd 2018-12-6
+Label Syntax Rule by lougd 2018-12-6
 */
 #include <stdlib.h>
 #include <string.h>
