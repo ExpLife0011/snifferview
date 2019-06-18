@@ -16,6 +16,7 @@ typedef BOOL (WINAPI *PPacketWatcher)(PacketContent &msg);
 typedef BOOL (WINAPI *PPacketFilterFun)(IN OUT PacketContent *msg, IN FilterSign sign, IN mstring &param);
 
 #define FILTER_EXCEPTION_SYNTAX_EREROR  ("syntax error")
+#define FILTER_EXCEPTION_CONFLICT       ("π˝¬ÀπÊ‘Ú≥ÂÕª") 
 
 enum FilterSign
 {

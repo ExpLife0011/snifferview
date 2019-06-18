@@ -307,6 +307,7 @@ BOOL WINAPI FilterRulesMerger(IN FilterRules rulea, IN FilterRules ruleb, OUT Fi
 				{
 					rulec.clear();
 					rulec.m_status = em_status_confilct;
+                    throw(FilterException(FILTER_EXCEPTION_CONFLICT));
 					return FALSE;
 				}
 				itk++;

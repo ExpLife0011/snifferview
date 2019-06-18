@@ -1381,7 +1381,6 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
         break;
     case  POPU_MENU_ITEM_ABOUT_ID:
         {
-            //ShowAboutView(g_main_view);
             ShowAbout();
         }
         break;
@@ -1408,6 +1407,11 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
         break;
     case  ID_WINFIND:
         {
+        }
+        break;
+    case IDC_BTN_EXP:
+        {
+            ShowHelpView(g_main_view);
         }
         break;
     case  ID_EXIT:
