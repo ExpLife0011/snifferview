@@ -28,7 +28,7 @@ using namespace std;
 //过滤规则配置
 BOOL g_net_mark = TRUE;                         //是否是网络字节序 默认是
 BOOL g_str_mark = TRUE;                         //字符串匹配是否大小写敏感 默认是
-mstring g_show_string = "tcp[chars]==\"GET\"";  //显示表达式
+mstring g_show_string = "ip";                   //显示表达式
 mstring g_filter_string;                        //过滤表达式
 HexHight g_hex_hight = em_user_data;            //高亮配置，默认userdata
 

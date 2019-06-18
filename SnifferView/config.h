@@ -7,7 +7,5 @@ extern mstring g_config_path;
 #define  REG_ANALYSIS_CONFIG_PATH   ("software\\snifferview\\analysis\\config")
 
 VOID InitSnfferViewConfig();
-
 VOID SaveFilterConfig();
-
 VOID GetFilterConfig();

@@ -11,7 +11,7 @@
 #include "FileCache.h"
 
 //最大缓存封包数量
-static ULONGLONG gs_llMaxCount = 211024;
+static ULONGLONG gs_llMaxCount = 22110000;
 
 //解析之后的封包池
 //vector<PPacketContent> g_filter_packets;

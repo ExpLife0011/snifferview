@@ -225,8 +225,8 @@ VOID WINAPI InitFilterEngine();
 BOOL WINAPI RulesCompile(IN const char *ext, OUT list<FilterRules> &res);
 
 VOID SaveFilterConfig();
-
 VOID GetFilterConfig();
+void ResetFilterConfig();
 
 BOOL ChangeFilterRules(IN const list<FilterRules> &filter);
 
