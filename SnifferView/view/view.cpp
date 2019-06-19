@@ -859,7 +859,6 @@ VOID OnInitDialog(HWND hdlg)
 {
     g_main_view = hdlg;
     s_spy_pen = (HPEN)GetStockObject(WHITE_PEN);
-    s_spy_pen = CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
     SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
     s_status = CreateStatusBar(hdlg);
     gsWndSniff = GetDlgItem(hdlg, IDC_CTRL_WND_SNIFF);
@@ -1334,6 +1333,16 @@ static VOID _OnCopyData(WPARAM wp, LPARAM lp)
     return;
 }
 
+static void _OnSearchWindow(HWND hdlg, WPARAM wp, LPARAM lp)
+{
+    ShowWindow(hdlg, SW_HIDE);
+    //这个消息只能通过PostMessage进行发送，才能设置成功，原因不清楚
+    SetCursor(s_cursor_target);
+    SetCapture(g_main_view);
+    s_cur_capter_window = NULL;
+    s_window_capter = TRUE;
+}
+
 VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
 {
     DWORD id = LOWORD(wp);
@@ -1405,13 +1414,14 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
             RunNetstatView(g_main_view, 0);
         }
         break;
-    case  ID_WINFIND:
-        {
-        }
-        break;
     case IDC_BTN_EXP:
         {
             ShowHelpView(g_main_view);
+        }
+        break;
+    case IDC_CTRL_WND_SNIFF:
+        {
+            _OnSearchWindow(g_main_view, wp, lp);
         }
         break;
     case  ID_EXIT:
@@ -1922,16 +1932,6 @@ leave:
     SetStateMsg(3, v.c_str());
 }
 
-VOID OnSearchWindow(HWND hdlg, WPARAM wp, LPARAM lp)
-{
-    ShowWindow(hdlg, SW_HIDE);
-    //这个消息只能通过PostMessage进行发送，才能设置成功，原因不清楚
-    SetCursor(s_cursor_target);
-    SetCapture(g_main_view);
-    s_cur_capter_window = NULL;
-    s_window_capter = TRUE;
-}
-
 VOID FramWindow(HWND hwnd)
 {
     RECT rc;
@@ -2155,7 +2155,7 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
         break;
     case  MSG_SEARCH_WINDOW:
         {
-            OnSearchWindow(hdlg, wp, lp);
+            _OnSearchWindow(hdlg, wp, lp);
         }
         break;
     case MSG_LOAD_PACKETFILE:
