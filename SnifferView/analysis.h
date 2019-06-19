@@ -10,46 +10,46 @@ using namespace std;
 //传输层协议类型
 enum TransferProtocolType
 {
-	em_tls_none = 0,
-	em_tls_tcp,
-	em_tls_udp,
-	em_tls_icmp
+    em_tls_none = 0,
+    em_tls_tcp,
+    em_tls_udp,
+    em_tls_icmp
 };
 
 //传输层协议头
 union TransferProtocolHeader
 {
-	TCPHeader m_tcp;
-	UDPHeader m_udp;
-	ICMPHeader m_icmp;
+    TCPHeader m_tcp;
+    UDPHeader m_udp;
+    ICMPHeader m_icmp;
 };
 
 //应用层协议类型
 enum UserProtocolType
 {
-	em_user_none = 0,
-	em_user_http,
-	em_user_smtp,
-	em_user_ftp
+    em_user_none = 0,
+    em_user_http,
+    em_user_smtp,
+    em_user_ftp
 };
 
 //应用层协议内容
 union UserProtocol
 {
-	HttpPacket m_http;
+    HttpPacket m_http;
 };
 
-#define		FLAG_SYN	(1 << 0)
-#define		FLAG_FIN	(1 << 1)
+#define        FLAG_SYN    (1 << 0)
+#define        FLAG_FIN    (1 << 1)
 
 //配合syn和fin标识用于识别是否是同一个链接
 struct ConnectMark
 {
-	ULONG m_addr1;
-	USHORT m_port1;
-	ULONG m_addr2;
-	USHORT m_port2;
-	mstring m_mark;
+    ULONG m_addr1;
+    USHORT m_port1;
+    ULONG m_addr2;
+    USHORT m_port2;
+    mstring m_mark;
 
     ConnectMark()
     {
@@ -57,32 +57,32 @@ struct ConnectMark
         m_port1 = m_port2 = 0;
     }
 
-	bool operator < (const ConnectMark &ms)const
-	{
-		mstring testa;
-		testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
-		mstring testb;
-		testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
-		return testa < testb;
-	}
+    bool operator < (const ConnectMark &ms)const
+    {
+        mstring testa;
+        testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
+        mstring testb;
+        testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
+        return testa < testb;
+    }
 
-	bool operator > (const ConnectMark &ms)const
-	{
-		mstring testa;
-		testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
-		mstring testb;
-		testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
-		return testa > testb;
-	}
+    bool operator > (const ConnectMark &ms)const
+    {
+        mstring testa;
+        testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
+        mstring testb;
+        testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
+        return testa > testb;
+    }
 
-	bool operator == (const ConnectMark &ms) const
-	{
-		mstring testa;
-		testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
-		mstring testb;
-		testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
-		return testa == testb;
-	}
+    bool operator == (const ConnectMark &ms) const
+    {
+        mstring testa;
+        testa.format("%08x%04x%08x%04x%hs", m_addr1, m_port1, m_addr2, m_port2, m_mark.c_str());
+        mstring testb;
+        testb.format("%08x%04x%08x%04x%hs", ms.m_addr1, ms.m_port1, ms.m_addr2, ms.m_port2, ms.m_mark.c_str());
+        return testa == testb;
+    }
 };
 
 //封包内容及附加类型
@@ -159,18 +159,8 @@ typedef struct PacketContent
 extern HANDLE g_filter_lock;
 extern HANDLE g_show_lock;
 
-#define  LOCK_FILTER			(WaitForSingleObject(g_filter_lock, INFINITE))
-#define  UNLOCK_FILTER	(ReleaseMutex(g_filter_lock))
-
-//#define  LOCK_SHOW			(WaitForSingleObject(g_show_lock, INFINITE))
-//#define  UNLOCK_SHOW	(ReleaseMutex(g_show_lock))
-
-//extern vector<PPacketContent> g_filter_packets;
-//extern vector<PPacketContent> g_show_packets;
-
-//extern volatile LONG g_packet_count;
-//extern volatile LONG g_filter_count;
-//extern volatile LONG g_show_count;
+#define  LOCK_FILTER            (WaitForSingleObject(g_filter_lock, INFINITE))
+#define  UNLOCK_FILTER    (ReleaseMutex(g_filter_lock))
 
 VOID WINAPI NoticePacket();
 

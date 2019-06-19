@@ -121,17 +121,14 @@ HPEN s_spy_pen = NULL;
 //hex控件
 HWND s_hex = NULL;
 
+#define POPU_MENU_ITEM_CONFIG_MANE                 ("参数配置   Ctrl+G")
+#define POPU_MENU_ITEM_CONFIG_ID                   IDM_CONFIG
+
 #define POPU_MENU_ITEM_COPY_NAME                   ("复制数据   Ctrl+C")
 #define POPU_MENU_ITEM_COPY_ID                     ID_COPY
 
-#define    POPU_MENU_ITEM_SHOW_NAME                ("显示规则   Ctrl+H")
-#define    POPU_MENU_ITEM_SHOW_ID                  ID_SHOW
-
 #define POPU_MENU_ITEM_STREAM_NAME                 ("追踪流      Ctrl+T")
 #define POPU_MENU_ITEM_STREAM_ID                   ID_STREAM
-
-#define    POPU_MENU_ITEM_FILTER_NAME              ("过滤规则   Ctrl+F")
-#define    POPU_MENU_ITEM_FILTER_ID                ID_FILTER
 
 #define    POPU_MENU_ITEM_SUSPEND_NAME             ("暂停嗅探   Ctrl+S")
 #define    POPU_MENU_ITEM_SUSPEND_ID               ID_SUSPEND
@@ -845,11 +842,26 @@ static LRESULT CALLBACK _KeyCaptureProc(int code, WPARAM wp, LPARAM lp) {
     if (GetFocus() == gsEditFilter)
     {
         _NoitfyFilterCheck();
-        dp(L"key:%d", wp);
+        //dp(L"key:%d", wp);
 
         if (wp == '\r')
         {
             SendMessageA(g_main_view, MSG_SET_FILTER, 0, 0);
+        }
+    }
+
+    //将来可能需要在这里加入键盘捕获
+    if (GetAsyncKeyState(VK_CONTROL) & (1 << 16))
+    {
+        int repeat = (lp & 0x100);
+        dp(L"ctrl test:%d, key:%d", repeat, wp);
+
+        DWORD command = 0;
+        switch (wp) {
+            case 'c':
+                break;
+            default:
+                break;
         }
     }
     return CallNextHookEx(gsKeyboardHook, code, wp, lp);
@@ -967,8 +979,8 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
     POINT pt = {0}; 
     GetCursorPos(&pt);
     HMENU menu = CreatePopupMenu();
+    AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_CONFIG_ID, POPU_MENU_ITEM_CONFIG_MANE);
     AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_COPY_ID, POPU_MENU_ITEM_COPY_NAME);
-    AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_SHOW_ID, POPU_MENU_ITEM_SHOW_NAME);
 
     bool enableStream = false;
     LOCK_FILTER;
@@ -992,7 +1004,6 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
 
     if (g_work_state == em_sniffer)
     {
-        AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_FILTER_ID, POPU_MENU_ITEM_FILTER_NAME);
         AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_NETCARD_CONFIG_ID, POPU_MENU_ITEM_NETCARD_CONFIG_NAME);
     }
 
@@ -1348,24 +1359,19 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
     DWORD id = LOWORD(wp);
     switch(id)
     {
+    case  POPU_MENU_ITEM_CONFIG_ID:
+        {
+            ShowConfigView(g_main_view);
+        }
+        break;
     case  POPU_MENU_ITEM_COPY_ID:
         {
             _OnCopyData(wp, lp);
         }
         break;
-    case POPU_MENU_ITEM_SHOW_ID:
-        {
-            ShowConfigView(g_main_view, em_show);
-        }
-        break;
     case POPU_MENU_ITEM_STREAM_ID:
         {
             ShowStreamView(g_main_view, s_last_select);
-        }
-        break;
-    case  POPU_MENU_ITEM_FILTER_ID:
-        {
-            ShowConfigView(g_main_view, em_filter);
         }
         break;
     case  POPU_MENU_ITEM_SUSPEND_ID:
@@ -1656,19 +1662,6 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
         case  0x43://ctrl + c
             {
                 param = POPU_MENU_ITEM_COPY_ID;
-            }
-            break;
-        case  0x48://ctrl + h
-            {
-                param = POPU_MENU_ITEM_SHOW_ID;
-            }
-            break;
-        case  0x46://ctrl + f
-            {
-                if (g_work_state == em_sniffer)
-                {
-                    param = POPU_MENU_ITEM_FILTER_ID;
-                }
             }
             break;
         case  0x53://ctrl + s

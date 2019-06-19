@@ -274,14 +274,10 @@ BEGIN
     END
     POPUP "设置(&S)"
     BEGIN
+        MENUITEM "参数设置",                        IDM_CONFIG
         MENUITEM "暂停嗅探",                        ID_SUSPEND
         MENUITEM "清空数据",                        ID_CLEAR
         MENUITEM "窗口置顶",                        ID_TOPMOST
-    END
-    POPUP "规则(&M)"
-    BEGIN
-        MENUITEM "显示规则",                        ID_SHOW
-        MENUITEM "过滤规则",                        ID_FILTER
         MENUITEM "网卡设置",                        ID_NET
     END
     POPUP "查看(&V)"

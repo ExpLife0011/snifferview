@@ -189,8 +189,6 @@ static BOOL _InstallSnifferServ()
     return bStat;
 }
 
-#include "view/StreamDlg.h"
-
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
     /*

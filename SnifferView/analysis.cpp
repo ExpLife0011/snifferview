@@ -408,31 +408,6 @@ VOID RecheckFilterPacket()
 
     InterlockedExchange(&g_show_count, 0);
     InterlockedExchange(&g_filter_count, 0);
-    /*
-    vector<PPacketContent>::iterator itm = g_filter_packets.begin();
-    BOOL clear = FALSE;
-    while(itm != g_filter_packets.end())
-    {
-        if (!IsPacketPassFilter(*itm))
-        {
-            LOCK_CLEAR;
-            s_clear_packets.push_back(*itm);
-            UNLOCK_CLEAR;
-            itm = g_filter_packets.erase(itm);
-            clear = TRUE;
-        }
-        else
-        {
-            InterlockedIncrement(&g_filter_count);
-            if (IsPacketPassShow(*itm))
-            {
-                InterlockedIncrement(&g_show_count);
-                g_show_packets.push_back(*itm);
-            }
-            itm++;
-        }
-    }
-    */
     for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
     {
         PacketContent packet;

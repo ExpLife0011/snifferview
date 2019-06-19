@@ -132,6 +132,10 @@
 #define ID_40045                        40045
 #define ID_4                            40046
 #define ID_NETSTAT                      40047
+#define ID_40048                        40048
+#define ID_40049                        40049
+#define IDM                             40050
+#define IDM_CONFIG                      40051
 #define ID_WINFIND                      40055
 #define ID_COPY                         40056
 #define ID_STREAM                       40057
@@ -141,7 +145,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
-#define _APS_NEXT_COMMAND_VALUE         40048
+#define _APS_NEXT_COMMAND_VALUE         40052
 #define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
