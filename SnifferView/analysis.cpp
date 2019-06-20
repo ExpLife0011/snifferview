@@ -7,18 +7,10 @@
 #include "filter.h"
 #include "view/view.h"
 #include "colour.h"
-#include "connect.h"
 #include "FileCache.h"
 
 //最大缓存封包数量
 static ULONGLONG gs_llMaxCount = 22110000;
-
-//解析之后的封包池
-//vector<PPacketContent> g_filter_packets;
-
-//符合显示过滤条件的封包池，如果显示条件重置，刷新此列表
-//vector<PPacketContent> g_show_packets;
-
 //网络链接展示的颜色
 map<mstring/*网络链接标识*/, DWORD/*颜色rgb*/> s_connect_colours;
 
@@ -446,7 +438,6 @@ VOID ClearPackets()
     //清除http缓存
     ClearHttpBuffer();
     //清除connect缓存
-    ClearConnect();
     LOCK_FILTER;
     s_connect_colours.clear();
     ClearColour();

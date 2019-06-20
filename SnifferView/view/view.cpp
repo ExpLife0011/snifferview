@@ -21,7 +21,7 @@
 #include "../dump.h"
 #include "../help.h"
 #include "../servers.h"
-#include "../connect.h"
+#include "../PacketUnique.h"
 #include "../process.h"
 #include "../filter.h"
 #include "../FileCache.h"
@@ -518,7 +518,7 @@ VOID RecheckFileRelation()
 VOID OnSnifferInit()
 {
     //注册观察器接口,要注意先后顺序，顺序不能错
-    RegistPacketWatcher(ConnectInit);
+    RegistPacketWatcher(CPacketUnique::PacketInit);
     RegistPacketWatcher(HttpWatcher);
     BeginWork();
     InitSnifferServers();
