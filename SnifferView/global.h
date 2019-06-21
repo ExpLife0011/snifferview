@@ -32,6 +32,9 @@ extern WorkState g_work_state;
 extern mstring g_sniffer_file;
 extern BOOL g_analysis_state;
 
+extern mstring gInstallPath;
+extern mstring gCfgPath;
+
 extern HINSTANCE g_m;
 extern SECURITY_ATTRIBUTES g_sa;
 extern SECURITY_DESCRIPTOR g_sd;

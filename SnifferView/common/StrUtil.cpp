@@ -29,7 +29,7 @@ strutf8 ToUtf8W(const wstring &str)
         if (buffer != 0)
         {
             WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, buffer, count, NULL, NULL);
-            ret.append(buffer, count);
+            ret = buffer;
 
             delete []buffer;
         }
@@ -56,7 +56,7 @@ wstring ToCommonW(const strutf8 &str)
         if (buffer != 0)
         {
             MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer, count);
-            ret.append(buffer, count);
+            ret = buffer;
 
             delete []buffer;
         }
@@ -78,7 +78,7 @@ string ToMultiByte(const wstring &str)
         if (buffer != 0)
         {
             WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, buffer, count, NULL, NULL);
-            ret.append(buffer, count);
+            ret = buffer;
 
             delete []buffer;
         }
@@ -100,7 +100,7 @@ wstring ToWideChar(const string &str)
         if (buffer != 0)
         {
             MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, count);
-            ret.append(buffer, count);
+            ret = buffer;
 
             delete []buffer;
         }

@@ -2,7 +2,6 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <set>
-#include "io_server.h"
 #include "global.h"
 #include "iocp_server.h"
 

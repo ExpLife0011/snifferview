@@ -181,10 +181,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\colour.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\config.cpp"
 				>
 			</File>
@@ -205,15 +201,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\io_server.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\iocp_server.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PacketCache.cpp"
 				>
 			</File>
 			<File
@@ -255,10 +251,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\colour.h"
-				>
-			</File>
-			<File
 				RelativePath=".\config.h"
 				>
 			</File>
@@ -283,11 +275,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\io_server.h"
+				RelativePath=".\iocp_server.h"
 				>
 			</File>
 			<File
-				RelativePath=".\iocp_server.h"
+				RelativePath=".\PacketCache.h"
 				>
 			</File>
 			<File
@@ -406,6 +398,22 @@
 			</File>
 			<File
 				RelativePath=".\common\servhlpr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\common\sqlite3.c"
+				>
+			</File>
+			<File
+				RelativePath=".\common\sqlite3.h"
+				>
+			</File>
+			<File
+				RelativePath=".\common\SqliteOperator.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\common\SqliteOperator.h"
 				>
 			</File>
 			<File

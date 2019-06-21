@@ -1,13 +1,13 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <Shlwapi.h>
+#include <ShlObj.h>
 #include <map>
 #include <list>
 #include <mstring.h>
 #include <common.h>
 #include <firewallctl.h>
 #include <servhlpr.h>
-#include "io_server.h"
 #include "packets.h"
 #include "analysis.h"
 #include "view/view.h"
@@ -34,6 +34,8 @@ WorkState g_work_state = em_sniffer;
 UserState g_eUserState = em_user;
 mstring g_sniffer_file;
 BOOL g_analysis_state = FALSE;
+mstring gInstallPath;
+mstring gCfgPath;
 
 HINSTANCE g_m;
 SECURITY_ATTRIBUTES g_sa;
@@ -42,12 +44,12 @@ SECURITY_DESCRIPTOR g_sd;
 //命令行参数解析 /s或者空 嗅探模式， /f数据文件分析模式
 static BOOL _AnalysisCmd()
 {
-	const char *cmd = GetCommandLineA();
-	ustring um = AtoW(cmd);
-	int count = 0;
-	BOOL state = FALSE;
-	do 
-	{
+    const char *cmd = GetCommandLineA();
+    ustring um = AtoW(cmd);
+    int count = 0;
+    BOOL state = FALSE;
+    do 
+    {
         if (IsAdminUser())
         {
             g_eUserState = em_admin;
@@ -57,38 +59,38 @@ static BOOL _AnalysisCmd()
             g_eUserState = em_user;
         }
 
-		LPWSTR* args = CommandLineToArgvW(um.c_str(), &count);
-		if (count < 1)
-		{
-			break;
-		}
+        LPWSTR* args = CommandLineToArgvW(um.c_str(), &count);
+        if (count < 1)
+        {
+            break;
+        }
 
-		if (1 == count)
-		{
-			g_work_state = em_sniffer;
-			g_config_path = REG_SNIFFER_CONFIG_PATH;
-			state = TRUE;
-		}
-		else
-		{
-			mstring vm = WtoA(args[1]);
-			vm.makelower();
-			if (vm == "/s" || vm == "-s")
-			{
-				g_work_state = em_sniffer;
-				g_config_path = REG_SNIFFER_CONFIG_PATH;
-				state = TRUE;
-			}
-			else if (vm == "/f" || vm == "-f")
-			{
-				g_work_state = em_analysis;
-				if (count > 2)
-				{
-					g_sniffer_file = WtoA(args[2]);
-				}
-				state = TRUE;
-				g_config_path = REG_ANALYSIS_CONFIG_PATH;
-			}
+        if (1 == count)
+        {
+            g_work_state = em_sniffer;
+            g_config_path = REG_SNIFFER_CONFIG_PATH;
+            state = TRUE;
+        }
+        else
+        {
+            mstring vm = WtoA(args[1]);
+            vm.makelower();
+            if (vm == "/s" || vm == "-s")
+            {
+                g_work_state = em_sniffer;
+                g_config_path = REG_SNIFFER_CONFIG_PATH;
+                state = TRUE;
+            }
+            else if (vm == "/f" || vm == "-f")
+            {
+                g_work_state = em_analysis;
+                if (count > 2)
+                {
+                    g_sniffer_file = WtoA(args[2]);
+                }
+                state = TRUE;
+                g_config_path = REG_ANALYSIS_CONFIG_PATH;
+            }
             else if (vm == "/sv" || vm == "\\sv" || vm == "-sv")
             {
                 g_work_state = em_sniffer;
@@ -101,9 +103,9 @@ static BOOL _AnalysisCmd()
                 g_work_state = em_service;
                 state = TRUE;
             }
-		}
-	} while (FALSE);
-	return state;
+        }
+    } while (FALSE);
+    return state;
 }
 
 static BOOL _InstallSnifferServ()
@@ -189,6 +191,26 @@ static BOOL _InstallSnifferServ()
     return bStat;
 }
 
+static void _InitSniffParam() {
+    char buff[512];
+#ifdef _DEBUG
+    GetModuleFileNameA(NULL, buff, sizeof(buff));
+    PathAppendA(buff, "..");
+    gInstallPath = buff;
+    PathAppendA(buff, "cache");
+    gCfgPath = buff;
+#else
+    GetWindowsDirectoryA(buff, sizeof(buff));
+
+    PathAppendA(buff, "SnifferView");
+    gInstallPath = buff;
+    PathAppendA(buff, "cache");
+    gCfgPath = buff;
+#endif
+    SHCreateDirectoryExA(NULL, gCfgPath.c_str(), NULL);
+    return;
+}
+
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
     /*
@@ -198,17 +220,21 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
     return 0;
     */
     dp(L"SnifferView启动参数：%ls", GetCommandLineW());
-	g_m = m;
-	if (!_AnalysisCmd())
-	{
-		dp(L"SnifferView参数错误");
-		return 0;
-	}
-	InitEveryMutexACL(g_sa, g_sd);
-	InitFilterEngine();
-	InitSnfferViewConfig();
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,2), &wsaData);
+    g_m = m;
+    if (!_AnalysisCmd())
+    {
+        dp(L"SnifferView参数错误");
+        return 0;
+    }
+
+    InitEveryMutexACL(g_sa, g_sd);
+    InitFilterEngine();
+    InitSnfferViewConfig();
+    //Init Param
+    _InitSniffParam();
+
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2,2), &wsaData);
     do 
     {
         if (em_sniffer == g_work_state)
@@ -257,6 +283,6 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
             RunSinfferServ();
         }
     } while ( FALSE);
-	WSACleanup();
+    WSACleanup();
     return 0;
 }

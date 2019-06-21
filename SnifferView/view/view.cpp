@@ -25,6 +25,7 @@
 #include "../process.h"
 #include "../filter.h"
 #include "../FileCache.h"
+#include "../PacketCache.h"
 
 #define  IDC_STATUS                     100077
 #define  MSG_UPDATE_ITEM_SPACE          (WM_USER + 10001)
@@ -515,10 +516,11 @@ VOID RecheckFileRelation()
     }
 }
 
-VOID OnSnifferInit()
+static void _InitSnifWatcher()
 {
     //注册观察器接口,要注意先后顺序，顺序不能错
     RegistPacketWatcher(CPacketUnique::PacketInit);
+    RegistPacketWatcher(CPacketCacheMgr::PacketAttrInit);
     RegistPacketWatcher(HttpWatcher);
     BeginWork();
     InitSnifferServers();
@@ -761,20 +763,9 @@ static BOOL _ChangeWndMessageFilter(UINT uMessage, BOOL bAllow)
 
 static void _InitSniffer() {
     mstring dllPath;
-    char installDir[256];
-#ifdef _DEBUG
-    GetModuleFileNameA(NULL, installDir, 256);
-    dllPath = installDir;
-    dllPath.path_append("..\\SyntaxTextView.dll");
-#else
-    GetWindowsDirectoryA(installDir, 256);
+    dllPath = gInstallPath;
 
-    PathAppendA(installDir, "SniffInstall");
-
-    dllPath = installDir;
-    SHCreateDirectoryExA(NULL, dllPath.c_str(), NULL);
-    dllPath.path_append("SyntaxTextView.dll");
-#endif
+    dllPath.path_append("SyntaxView.dll");
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
     {
         ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
@@ -924,7 +915,8 @@ VOID OnInitDialog(HWND hdlg)
     if (g_work_state == em_sniffer)
     {
         CFileCache::GetInst()->InitFileCache();
-        OnSnifferInit();
+        CPacketCacheMgr::GetInst()->InitCacheMgr();
+        _InitSnifWatcher();
         SetWindowTextA(hdlg, SNIFFER_STATE_NAME);
     }
     else if(g_work_state == em_analysis)

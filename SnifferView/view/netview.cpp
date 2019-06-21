@@ -3,7 +3,6 @@
 #include <common.h>
 #include "netview.h"
 #include "view.h"
-#include "../io_server.h"
 #include "../global.h"
 #include "../resource.h"
 #include "../servers.h"
