@@ -12,8 +12,8 @@
 //最大缓存封包数量
 static ULONGLONG gs_llMaxCount = 22110000;
 
-HANDLE g_filter_lock = CreateMutexA(NULL, FALSE, NULL);
-HANDLE g_show_lock = CreateMutexA(NULL, FALSE, NULL);
+//HANDLE g_filter_lock = CreateMutexA(NULL, FALSE, NULL);
+//HANDLE g_show_lock = CreateMutexA(NULL, FALSE, NULL);
 static HANDLE s_notice_event = CreateEventA(NULL, FALSE, FALSE, NULL);
 static HANDLE s_leave_event = CreateEventA(NULL, TRUE, FALSE, NULL);
 static HANDLE s_work_thread = NULL;
@@ -165,10 +165,8 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
     do
     {
         {
-            LOCK_FILTER;
             if (CFileCache::GetInst()->GetPacketCount() >= gs_llMaxCount)
             {
-                UNLOCK_FILTER;
                 bOverFLow = TRUE;
                 break;
             }
@@ -189,7 +187,6 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
             }
             msg.m_ip_header.n2h();
             CFileCache::GetInst()->PushPacket(msg, show);
-            UNLOCK_FILTER;
         }
         UpdatePacketsCount();
     } while (FALSE);
@@ -240,7 +237,6 @@ DWORD WINAPI PacketAnalysisThread(LPVOID p)
 
 VOID RecheckFilterPacket()
 {
-    LOCK_FILTER;
     CFileCache::GetInst()->ClearShow();
 
     for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
@@ -253,13 +249,11 @@ VOID RecheckFilterPacket()
             CFileCache::GetInst()->SetShowPacket(i);
         }
     }
-    UNLOCK_FILTER;
     UpdatePacketsCount();
 }
 
 VOID RecheckShowPacket()
 {
-    LOCK_FILTER;
     CFileCache::GetInst()->ClearShow();
     for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
     {
@@ -270,7 +264,6 @@ VOID RecheckShowPacket()
             CFileCache::GetInst()->SetShowPacket(i);
         }
     }
-    UNLOCK_FILTER;
     UpdatePacketsCount();
 }
 
@@ -281,16 +274,8 @@ VOID ClearPackets()
     //清除http缓存
     ClearHttpBuffer();
     //清除connect缓存
-    LOCK_FILTER;
     CPacketCacheMgr::GetInst()->ResetCacheMgr();
-    //ClearColour();
-    //SetEvent(s_clear_event);
-    //g_filter_packets.clear();
-    //g_show_packets.clear();
-    //g_filter_packets.swap(vector<PPacketContent>());
-    //g_show_packets.swap(vector<PPacketContent>());
     CFileCache::GetInst()->ClearCache();
-    UNLOCK_FILTER;
     UpdatePacketsCount();
 }
 

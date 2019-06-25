@@ -42,7 +42,7 @@ INT_PTR CProgressDlg::OnInitDlg(WPARAM wp, LPARAM lp) {
 
 void CProgressDlg::SetProgress(int total, int curPos, const mstring &content) {
     int lastCount = mTotal;
-    dp(L"test 1:%d, 2:%d", total, curPos);
+    //dp(L"test 1:%d, 2:%d", total, curPos);
 
     mTotal = total;
     mCurPos = curPos;

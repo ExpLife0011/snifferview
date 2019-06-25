@@ -291,9 +291,26 @@ void CFileCache::SetShowPacket(size_t index) {
                     mShowSet.insert(mShowSet.begin() + pos0 + 1, pos);
                 }
                 break;
+            } else if (pos1 == (pos0 + 1)) {
+                //需要特殊处理，否则会出现pos0 + pos1 / 2 == pos0的情况
+                if ((pos.mStartPos == mShowSet[pos0].mStartPos) || (pos.mStartPos == mShowSet[pos1].mStartPos))
+                {
+                    break;
+                }
+
+                if (pos.mStartPos < mShowSet[pos0].mStartPos)
+                {
+                    mShowSet.insert(mShowSet.begin() + pos0, pos);
+                } else if (pos.mStartPos < mShowSet[pos1].mStartPos)
+                {
+                    mShowSet.insert(mShowSet.begin() + pos1, pos);
+                } else {
+                    mShowSet.insert(mShowSet.begin() + pos1 + 1, pos);
+                }
+                break;
             }
 
-            size_t mid = (pos1 - pos0) / 2;
+            size_t mid = (pos1 + pos0) / 2;
             PacketPosInFile tmp = mShowSet[mid];
 
             if (tmp.mStartPos == pos.mStartPos)

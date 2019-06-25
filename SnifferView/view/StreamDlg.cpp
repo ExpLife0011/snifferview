@@ -163,10 +163,8 @@ INT_PTR CStreamDlg::DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 }
 
 void CStreamDlg::GetPacketSet() {
-    LOCK_FILTER;
     if (CFileCache::GetInst()->GetShowCount() <= (size_t)mCurPos)
     {
-        UNLOCK_FILTER;
         return;
     }
 
@@ -194,7 +192,6 @@ void CStreamDlg::GetPacketSet() {
             mUnique2 = tmp.m_dec_mark;
         }
     }
-    UNLOCK_FILTER;
 }
 
 void CStreamDlg::AddData(const mstring &desc, const mstring &data) {

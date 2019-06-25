@@ -986,7 +986,6 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
     AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_COPY_ID, POPU_MENU_ITEM_COPY_NAME);
 
     bool enableStream = false;
-    LOCK_FILTER;
     if (s_last_select >= 0 && (CFileCache::GetInst()->GetShowCount() > (size_t)s_last_select))
     {
         PacketContent pp;
@@ -996,7 +995,6 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
             enableStream = true;
         }
     }
-    UNLOCK_FILTER;
 
     if (enableStream)
     {
@@ -1053,8 +1051,6 @@ static VOID WINAPI ShowPacketData(int itm)
         return;
     }
 
-    //LOCK_SHOW;
-    LOCK_FILTER;
     if (itm < (int)CFileCache::GetInst()->GetShowCount())
     {
         int hight_begin = 0;
@@ -1066,7 +1062,6 @@ static VOID WINAPI ShowPacketData(int itm)
         SetData((const BYTE *)content.m_packet.c_str(), content.m_packet.size());
         if (content.m_tls_type == em_tls_tcp)
         {
-            //mark = sizeof(TCPHeader);
             TCPHeader *tcp = (TCPHeader *)(content.m_packet.c_str() + sizeof(IPHeader));
             mark = tcp->get_tcp_header_length();
         }
@@ -1081,8 +1076,6 @@ static VOID WINAPI ShowPacketData(int itm)
 
         if (mark == 0)
         {
-            //UNLOCK_SHOW;
-            UNLOCK_FILTER;
             return;
         }
 
@@ -1111,8 +1104,6 @@ static VOID WINAPI ShowPacketData(int itm)
     {
         SetData(NULL, 0);
     }
-    //UNLOCK_SHOW;
-    UNLOCK_FILTER;
 }
 
 BOOL ShowFileSaveDialog(IN HWND hwnd, IN const char *name, IN const char *defdir, OUT mstring &file)
@@ -1213,9 +1204,9 @@ VOID WINAPI OnExportFile()
                     break;
                 }
             }
-            LOCK_FILTER;
+
             BOOL ret = DumpPacketsToFile(file.c_str());
-            UNLOCK_FILTER;
+
             file.repsub("/", "\\");
             mstring dir = file;
             int m = dir.rfind('\\');
@@ -1446,12 +1437,8 @@ VOID WINAPI OnGetListCtrlDisplsy(IN OUT NMLVDISPINFO* plvdi)
     int itm = plvdi->item.iItem;
     int sub = plvdi->item.iSubItem;
     int mark = 0;
-    //LOCK_SHOW;
-    LOCK_FILTER;
     if ((int)CFileCache::GetInst()->GetShowCount() <= itm)
     {
-        //UNLOCK_SHOW;
-        UNLOCK_FILTER;
         return;
     }
 
@@ -1616,8 +1603,6 @@ VOID WINAPI OnGetListCtrlDisplsy(IN OUT NMLVDISPINFO* plvdi)
         ts.at(255) = 0x00;
     }
     plvdi->item.pszText = (LPSTR)(ts.c_str());
-    //UNLOCK_SHOW;
-    UNLOCK_FILTER;
 }
 
 VOID OnRButtonUp(WPARAM wp, LPARAM lp)
@@ -1748,11 +1733,9 @@ LRESULT TableDraw (LPARAM lp)
             DWORD col = 0;
             int itm = (int)pListDraw->nmcd.dwItemSpec;
 
-            LOCK_FILTER;
             PacketContent content;
             CFileCache::GetInst()->GetShow(itm, content);
             col = content.m_colour;
-            UNLOCK_FILTER;
             pListDraw->clrTextBk = col;
         }
         return CDRF_NEWFONT;
@@ -1900,7 +1883,6 @@ VOID OnSelectChange(WPARAM wp, LPARAM lp)
     int itm = 0;
     v.clear();
 
-    LOCK_FILTER;
     if (end >= begin && end - begin <= 3)
     {
         if (s_last_select < 0 || s_last_select >= (int)CFileCache::GetInst()->GetShowCount())
@@ -1924,7 +1906,6 @@ VOID OnSelectChange(WPARAM wp, LPARAM lp)
         v.format("十进制：%d  十六进制：%X", d, d);
     }
 leave:
-    UNLOCK_FILTER;
     SetStateMsg(3, v.c_str());
 }
 
@@ -2103,13 +2084,13 @@ public:
                 ChangeShowRules(fltRule);
 
                 //Recheck Filter
-                LOCK_FILTER;
                 int totalCount = CFileCache::GetInst()->GetPacketCount();
                 int curPos = 0;
                 int showCount = 0;
                 CFileCache::GetInst()->ClearShow();
                 mstring showStr;
-                for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
+                int maxCount = CFileCache::GetInst()->GetPacketCount();
+                for (size_t i = 0 ; i < (size_t)maxCount ; i++)
                 {
                     curPos++;
                     PacketContent content;
@@ -2124,7 +2105,6 @@ public:
                     showStr = FormatA("封包总数 %d, 处理数量 %d, 符合条件 %d", totalCount, curPos, showCount);
                     gsProgressDlg->SetProgress(totalCount, curPos, showStr);
                 }
-                UNLOCK_FILTER;
             }
         } while (false);
 
@@ -2214,9 +2194,7 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
         break;
     case  MSG_UPDATE_DATA:
         {
-            LOCK_FILTER;
             SendMessageA(s_list, LVM_SETITEMCOUNT, CFileCache::GetInst()->GetShowCount(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
-            UNLOCK_FILTER;
         }
         break;
     case  MSG_UPDATE_SELECT:
@@ -2353,24 +2331,20 @@ VOID WINAPI NoticefSnifferViewRefush()
 {
     if (IsWindow(g_main_view))
     {
-        SendMessageA(g_main_view, MSG_UPDATE_DATA, 0, 0);
+        PostMessageA(g_main_view, MSG_UPDATE_DATA, 0, 0);
     }
 
     size_t v;
-    //LOCK_SHOW;
-    LOCK_FILTER;
     v = CFileCache::GetInst()->GetShowCount();
-    //UNLOCK_SHOW;
-    UNLOCK_FILTER;
     if (IsWindow(s_list))
     {
         if (v > 0)
         {
-            SendMessageA(s_list, LVM_REDRAWITEMS, 0, v - 1);
+            PostMessageA(s_list, LVM_REDRAWITEMS, 0, v - 1);
         }
         else
         {
-            SendMessageA(s_list, LVM_REDRAWITEMS, 0, 0);
+            PostMessageA(s_list, LVM_REDRAWITEMS, 0, 0);
         }
     }
     InvalidateRect(s_list, NULL, TRUE);
