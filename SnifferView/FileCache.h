@@ -39,8 +39,11 @@ private:
 
 private:
     std::mstring mCacheFile;
-    HANDLE mFileHandle;
+    //Write Handle, Write File with Locker and Read Without.
+    HANDLE mWriteHandle;
     std::vector<PacketPosInFile> mShowSet;
     std::vector<PacketPosInFile> mPacketSet;
-    CCriticalSectionLockable mDataLocker;
+
+    CCriticalSectionLockable mWriteLocker;  //Write Locker
+    CCriticalSectionLockable mCacheLocker;  //Cache Locker
 };

@@ -191,6 +191,15 @@ BEGIN
     EDITTEXT        IDC_STREAM_FIND,7,7,224,14,ES_AUTOHSCROLL
 END
 
+IDD_PROGRESS DIALOGEX 0, 0, 203, 35
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "Î¢ÈíÑÅºÚ", 400, 0, 0x86
+BEGIN
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,5,189,10
+    LTEXT           "¾²Ì¬",IDC_PROGRESS_CONTENT,7,21,189,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

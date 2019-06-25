@@ -425,6 +425,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\common\tpool.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\common\tpool.h"
+				>
+			</File>
+			<File
 				RelativePath=".\common\winsize.cpp"
 				>
 			</File>
@@ -490,6 +498,14 @@
 			</File>
 			<File
 				RelativePath=".\view\netview.h"
+				>
+			</File>
+			<File
+				RelativePath=".\view\ProgressDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\view\ProgressDlg.h"
 				>
 			</File>
 			<File

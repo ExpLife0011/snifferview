@@ -41,12 +41,12 @@ bool CFileCache::InitFileCache() {
         DeleteFileA(dbPath);
     }
 
-    CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mWriteLocker);
     mCacheFile = dbPath;
-    mFileHandle = CreateFileA(
+    mWriteHandle = CreateFileA(
         dbPath,
-        FILE_ALL_ACCESS,
-        0,
+        GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
         CREATE_ALWAYS,
         FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
@@ -56,9 +56,24 @@ bool CFileCache::InitFileCache() {
 }
 
 mstring CFileCache::GetContent(const PacketPosInFile &pos) const {
-    CScopedLocker locker(&mDataLocker);
+    HANDLE hRead = CreateFileA(
+        mCacheFile.c_str(),
+        GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL
+        );
+    int d = GetLastError();
+
+    if (INVALID_HANDLE_VALUE == hRead)
+    {
+        return "";
+    }
+
     mstring result;
-    SetFilePointer(mFileHandle, pos.mStartPos, NULL, FILE_BEGIN);
+    SetFilePointer(hRead, pos.mStartPos, NULL, FILE_BEGIN);
 
     char buff[4096];
     DWORD bufSize = 4096;
@@ -69,7 +84,7 @@ mstring CFileCache::GetContent(const PacketPosInFile &pos) const {
         curRead = (readCount > bufSize ? bufSize : readCount);
 
         DWORD tmp = 0;
-        if (!ReadFile(mFileHandle, buff, readCount, &tmp, NULL) || 0 == tmp)
+        if (!ReadFile(hRead, buff, readCount, &tmp, NULL) || 0 == tmp)
         {
             break;
         }
@@ -82,6 +97,7 @@ mstring CFileCache::GetContent(const PacketPosInFile &pos) const {
             break;
         }
     }
+    CloseHandle(hRead);
     return result;
 }
 
@@ -201,40 +217,47 @@ bool CFileCache::GetPacketFromStr(const std::mstring &str, PacketContent &packet
 }
 
 size_t CFileCache::GetPacketCount() const {
-    CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mCacheLocker);
     return mPacketSet.size();
 }
 
 bool CFileCache::GetPacket(size_t index, PacketContent &packet) const {
-    CScopedLocker locker(&mDataLocker);
-    if (index >= mPacketSet.size())
+    PacketPosInFile pos;
     {
-        return false;
+        CScopedLocker locker(&mCacheLocker);
+        if (index >= mPacketSet.size())
+        {
+            return false;
+        }
+
+        pos = mPacketSet[index];
     }
 
-    PacketPosInFile pos = mPacketSet[index];
     return GetPacketFromStr(GetContent(pos), packet);
 }
 
 size_t CFileCache::GetShowCount() const {
-    CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mCacheLocker);
     return mShowSet.size();
 }
 
 bool CFileCache::GetShow(size_t index, PacketContent &packet) const {
-    CScopedLocker locker(&mDataLocker);
-    if (index >= mShowSet.size())
+    PacketPosInFile pos;
     {
-        return false;
+        CScopedLocker locker(&mCacheLocker);
+        if (index >= mShowSet.size())
+        {
+            return false;
+        }
+        pos = mShowSet[index];
     }
 
-    mstring content = GetContent(mShowSet[index]);
-    bool ret = GetPacketFromStr(content, packet);
-    return ret;
+    mstring content = GetContent(pos);
+    return GetPacketFromStr(content, packet);
 }
 
 void CFileCache::SetShowPacket(size_t index) {
-    CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mCacheLocker);
     /*
     基于效率考虑,优先将数据插入缓存尾部,因为大部分情况属于这种.
     如果不满足要求,可能是随机插入情况,通过二分查找找到合适的位置
@@ -289,29 +312,35 @@ void CFileCache::SetShowPacket(size_t index) {
 }
 
 void CFileCache::ClearShow() {
-    CScopedLocker locker(&mDataLocker);
+    CScopedLocker locker(&mCacheLocker);
     mShowSet.clear();
 }
 
 void CFileCache::ClearCache() {
-    if (INVALID_HANDLE_VALUE != mFileHandle)
+    if (INVALID_HANDLE_VALUE != mWriteHandle)
     {
-        CScopedLocker locker(&mDataLocker);
-        CloseHandle(mFileHandle);
-        mFileHandle = NULL;
-        DeleteFileA(mCacheFile.c_str());
-        mShowSet.clear();
-        mPacketSet.clear();
+        {
+            CScopedLocker locker1(&mWriteLocker);
+            CloseHandle(mWriteHandle);
+            mWriteHandle = NULL;
+            DeleteFileA(mCacheFile.c_str());
 
-        mFileHandle = CreateFileA(
-            mCacheFile.c_str(),
-            FILE_ALL_ACCESS,
-            0,
-            NULL,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
-            NULL
-            );
+            mWriteHandle = CreateFileA(
+                mCacheFile.c_str(),
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                NULL,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
+                NULL
+                );
+        }
+
+        {
+            CScopedLocker locker2(&mCacheLocker);
+            mShowSet.clear();
+            mPacketSet.clear();
+        }
     }
 }
 
@@ -404,22 +433,26 @@ void CFileCache::PushPacket(const PacketContent &packet, bool show) {
     content += CACHE_DATA_MARK;
 
     DWORD lowSize = 0, highSize = 0;
-
-    CScopedLocker locker(&mDataLocker);
-    lowSize = GetFileSize(mFileHandle, &highSize);
-    SetFilePointer(mFileHandle, 0, NULL, FILE_END);
-
     PacketPosInFile pos;
-    pos.mStartPos = lowSize;
-    pos.mEndPos = lowSize + content.size();
-
-    DWORD dw = 0;
-    WriteFile(mFileHandle, content.c_str(), content.size(), &dw, NULL);
-    FlushFileBuffers(mFileHandle);
-
-    if (show)
     {
-        mShowSet.push_back(pos);
+        CScopedLocker locker1(&mWriteLocker);
+        lowSize = GetFileSize(mWriteHandle, &highSize);
+        SetFilePointer(mWriteHandle, 0, NULL, FILE_END);
+
+        pos.mStartPos = lowSize;
+        pos.mEndPos = lowSize + content.size();
+
+        DWORD dw = 0;
+        WriteFile(mWriteHandle, content.c_str(), content.size(), &dw, NULL);
+        FlushFileBuffers(mWriteHandle);
     }
-    mPacketSet.push_back(pos);
+
+    {
+        CScopedLocker locker2(&mCacheLocker);
+        if (show)
+        {
+            mShowSet.push_back(pos);
+        }
+        mPacketSet.push_back(pos);
+    }
 }

@@ -26,6 +26,13 @@
 #include "../filter.h"
 #include "../FileCache.h"
 #include "../PacketCache.h"
+#include "ProgressDlg.h"
+#include "../common/StrUtil.h"
+
+enum MainViewMode {
+    em_mode_normal = 0,     //正常交互
+    em_mode_wait_result     //等待过滤结果
+};
 
 #define  IDC_STATUS                     100077
 #define  MSG_UPDATE_ITEM_SPACE          (WM_USER + 10001)
@@ -41,8 +48,10 @@
 
 #define MSG_INTERNAL_RBUTTONUP          (WM_USER + 10071)   //鼠标右键弹起，wp:窗口句柄 lp:备用
 #define MSG_SET_FILTER                  (WM_USER + 10081)   //过滤规则生效
+#define MSG_FILTER_COMPLETE             (WM_USER + 10083)   //过滤任务完成
 
 mstring g_def_dir;
+MainViewMode gsViewMode = em_mode_normal;
 
 const char *s_partition_class_name = ("PartitionClass");
 HWND g_main_view = NULL;
@@ -83,6 +92,7 @@ static HBRUSH gsBrushRight = NULL;
 static HBRUSH gsBrushError = NULL;
 static HHOOK gsKeyboardHook = NULL;
 static DWORD gsEditMode = 0;    //0:righit 1:faild
+static CProgressDlg *gsProgressDlg = NULL;
 
 //dlg控件窗口回调
 typedef LRESULT (CALLBACK *PWIN_PROC)(HWND, UINT, WPARAM, LPARAM);
@@ -112,8 +122,8 @@ static map<DWORD, MainViewMsg> s_msgs;
 static UINT_PTR s_timer = 0;
 
 static HANDLE s_state_lock = CreateMutexA(NULL, FALSE, NULL);
-#define  LOCK_STATE            WaitForSingleObject(s_state_lock, INFINITE)
-#define  UNLOCK_STATE    ReleaseMutex(s_state_lock)
+#define  LOCK_STATE     WaitForSingleObject(s_state_lock, INFINITE)
+#define  UNLOCK_STATE   ReleaseMutex(s_state_lock)
 static map<int, mstring> s_state_msg;
 
 //绘制边框的画笔
@@ -866,6 +876,7 @@ VOID OnInitDialog(HWND hdlg)
     s_status = CreateStatusBar(hdlg);
     gsWndSniff = GetDlgItem(hdlg, IDC_CTRL_WND_SNIFF);
     RegistPartlClass();
+    gsProgressDlg = new CProgressDlg();
 
     gsEditFilter = GetDlgItem(hdlg, IDC_EDT_FILTER);
     _InitFilterEdit();
@@ -2066,9 +2077,85 @@ static VOID OnPacketsOverFlow()
     MessageBoxW(g_main_view, L"封包数量超出最大数量,已暂停嗅探,请及时进行清理", L"封包数量过多", MB_OK | MB_ICONWARNING);
 }
 
+//Filter Task
+class CFilterTask : public ThreadRunable {
+public:
+    CFilterTask(const mstring &filterStr) {
+        mFilterStr = filterStr;
+    }
+
+    virtual ~CFilterTask() {
+    }
+
+    virtual void run() {
+        list<FilterRules> fltRule;
+        do 
+        {
+            if (!mFilterStr.empty())
+            {
+                RulesCompile(mFilterStr.c_str(), fltRule);
+            }
+
+            g_show_string = mFilterStr;
+            if (IsShowRulesDif(fltRule))
+            {
+                SaveFilterConfig();
+                ChangeShowRules(fltRule);
+
+                //Recheck Filter
+                LOCK_FILTER;
+                int totalCount = CFileCache::GetInst()->GetPacketCount();
+                int curPos = 0;
+                int showCount = 0;
+                CFileCache::GetInst()->ClearShow();
+                mstring showStr;
+                for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
+                {
+                    curPos++;
+                    PacketContent content;
+                    CFileCache::GetInst()->GetPacket(i, content);
+
+                    if (IsPacketPassShow(&content))
+                    {
+                        showCount++;
+                        CFileCache::GetInst()->SetShowPacket(i);
+                    }
+
+                    showStr = FormatA("封包总数 %d, 处理数量 %d, 符合条件 %d", totalCount, curPos, showCount);
+                    gsProgressDlg->SetProgress(totalCount, curPos, showStr);
+                }
+                UNLOCK_FILTER;
+            }
+        } while (false);
+
+        gsProgressDlg->SetComplete("所有封包过滤完成");
+        gsProgressDlg->Close();
+        PostMessageA(g_main_view, MSG_FILTER_COMPLETE, 0, 0);
+    }
+
+private:
+    mstring mFilterStr;
+};
+
+static void _SetMainViewMode(MainViewMode mode) {
+    gsViewMode = mode;
+    if (em_mode_normal == mode)
+    {
+        SendMessageA(gsEditFilter, EM_SETREADONLY,  FALSE, 0);
+    } else if (em_mode_wait_result == mode)
+    {
+        SendMessageA(gsEditFilter, EM_SETREADONLY,  TRUE, 0);
+    }
+}
+
 //过滤规则生效
 static void _OnSetFilter() {
     static mstring sLastRule = "abcdef1234";
+
+    if (em_mode_wait_result == gsViewMode)
+    {
+        return;
+    }
 
     mstring str = GetWindowStrA(gsEditFilter);
     str.trim();
@@ -2079,24 +2166,23 @@ static void _OnSetFilter() {
     }
 
     sLastRule = str;
-    list<FilterRules> fltRule;
-    if (!str.empty())
+    if (!sLastRule.empty())
     {
-        if (!RulesCompile(str.c_str(), fltRule))
+        list<FilterRules> flt;
+        if (!RulesCompile(sLastRule.c_str(), flt))
         {
             return;
         }
     }
+    _SetMainViewMode(em_mode_wait_result);
+    gsProgressDlg->CreateDlg(g_main_view);
+    gThreadPool->exec(new CFilterTask(sLastRule));
+}
 
-    g_show_string = str;
-    if (IsShowRulesDif(fltRule))
-    {
-        SaveFilterConfig();
-        ChangeShowRules(fltRule);
-        RecheckShowPacket();
-
-        NoticefSnifferViewRefush();
-    }
+static void _OnFilterComplete() {
+    UpdatePacketsCount();
+    NoticefSnifferViewRefush();
+    _SetMainViewMode(em_mode_normal);
 }
 
 DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -2156,6 +2242,11 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
     case  MSG_SET_FILTER:
         {
             _OnSetFilter();
+        }
+        break;
+    case MSG_FILTER_COMPLETE:
+        {
+            _OnFilterComplete();
         }
         break;
     case  WM_MOUSEMOVE:

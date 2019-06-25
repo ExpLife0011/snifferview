@@ -19,6 +19,7 @@
 #define IDR_DLL1                        134
 #define IDR_DLL_SYNTAX                  134
 #define IDD_STREAM                      135
+#define IDD_PROGRESS                    136
 #define IDC_EDIT1                       1003
 #define IDC_EDIT                        1003
 #define IDC_EDT_ABOUT                   1003
@@ -87,6 +88,8 @@
 #define IDC_ABOUT_VER                   1046
 #define IDC_STREAM_SELECT               1050
 #define IDC_CTRL_WND_SNIFF              1051
+#define IDC_PROGRESS                    1052
+#define IDC_PROGRESS_CONTENT            1053
 #define ID_40003                        40003
 #define ID_40004                        40004
 #define ID_40005                        40005
@@ -144,9 +147,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         40052
-#define _APS_NEXT_CONTROL_VALUE         1052
+#define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

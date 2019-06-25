@@ -159,7 +159,7 @@ typedef struct PacketContent
 extern HANDLE g_filter_lock;
 extern HANDLE g_show_lock;
 
-#define  LOCK_FILTER            (WaitForSingleObject(g_filter_lock, INFINITE))
+#define  LOCK_FILTER      (WaitForSingleObject(g_filter_lock, INFINITE))
 #define  UNLOCK_FILTER    (ReleaseMutex(g_filter_lock))
 
 VOID WINAPI NoticePacket();

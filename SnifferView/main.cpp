@@ -22,6 +22,7 @@
 #include "view/netstat.h"
 #include "sfvserv.h"
 #include "StrUtil.h"
+#include "common/tpool.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "Advapi32.lib")
@@ -36,6 +37,8 @@ mstring g_sniffer_file;
 BOOL g_analysis_state = FALSE;
 mstring gInstallPath;
 mstring gCfgPath;
+//thread pool
+ThreadPool *gThreadPool = NULL;
 
 HINSTANCE g_m;
 SECURITY_ATTRIBUTES g_sa;
@@ -130,21 +133,15 @@ static BOOL _InstallSnifferServ()
             if (!IsSameFileW(wszSelf, wszServ))
             {
                 ustring wstrTemp(wszServ);
-
                 ustring wstrName;
 
                 wstrName.format(L"..\\SfvServ%08x.tmp", GetTickCount());
-
                 wstrTemp.path_append(wstrName.c_str());
 
-                MoveFileExW(wszServ, wstrTemp.c_str(), MOVEFILE_REPLACE_EXISTING);
-
+                MoveFileExW(wszServ, wstrTemp.c_str(), MOVEFILE_REPLACE_EXISTING);\
                 MoveFileExW(wstrTemp.c_str(), NULL, MOVEFILE_DELAY_UNTIL_REBOOT);
-
                 CopyFileW(wszSelf, wszServ, FALSE);
-
                 ServStopW(SFV_SERVICE_NAME);
-
                 ServStartW(SFV_SERVICE_NAME);
             }
         }
@@ -213,7 +210,12 @@ static void _InitSniffParam() {
 
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
+    //Debug
     /*
+    CProgressDlg dlg;
+    dlg.DoModule(NULL);
+    return 0;
+
     LoadLibraryA("SyntaxView.dll");
     ShowStreamView(NULL, 0);
     MessageBoxA(0, 0, 0, 0);
@@ -232,6 +234,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
     InitSnfferViewConfig();
     //Init Param
     _InitSniffParam();
+    gThreadPool = new ThreadPool(1, 4);
 
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2,2), &wsaData);
