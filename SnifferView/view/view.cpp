@@ -1627,6 +1627,7 @@ VOID OnTimerEvent(WPARAM wp, LPARAM lp)
     {
         return;
     }
+
     LOCKMSG;
     map<DWORD, MainViewMsg>::iterator itm;
     for (itm = s_msgs.begin() ; itm != s_msgs.end() ; itm++)
@@ -2063,9 +2064,28 @@ class CFilterTask : public ThreadRunable {
 public:
     CFilterTask(const mstring &filterStr) {
         mFilterStr = filterStr;
+
+        mTotal = 0;
+        mCurPos = 0;;
+        mShowCount = 0;
     }
 
     virtual ~CFilterTask() {
+    }
+
+    static bool FilterHandler(size_t index, const PacketContent *content, void *param) {
+        CFilterTask *pThis = (CFilterTask *)param;
+
+        pThis->mCurPos++;
+        if (IsPacketPassShow((PacketContent *)content))
+        {
+            pThis->mShowCount++;
+            CFileCache::GetInst()->SetShowPacket(index);
+        }
+
+        //mstring showStr = FormatA("封包总数 %d, 处理数量 %d, 符合条件 %d", pThis->mTotal, pThis->mCurPos, pThis->mShowCount);
+        //gsProgressDlg->SetProgress(pThis->mTotal, pThis->mCurPos, pThis->mShowCount);
+        return true;
     }
 
     virtual void run() {
@@ -2084,27 +2104,9 @@ public:
                 ChangeShowRules(fltRule);
 
                 //Recheck Filter
-                int totalCount = CFileCache::GetInst()->GetPacketCount();
-                int curPos = 0;
-                int showCount = 0;
                 CFileCache::GetInst()->ClearShow();
-                mstring showStr;
-                int maxCount = CFileCache::GetInst()->GetPacketCount();
-                for (size_t i = 0 ; i < (size_t)maxCount ; i++)
-                {
-                    curPos++;
-                    PacketContent content;
-                    CFileCache::GetInst()->GetPacket(i, content);
-
-                    if (IsPacketPassShow(&content))
-                    {
-                        showCount++;
-                        CFileCache::GetInst()->SetShowPacket(i);
-                    }
-
-                    showStr = FormatA("封包总数 %d, 处理数量 %d, 符合条件 %d", totalCount, curPos, showCount);
-                    gsProgressDlg->SetProgress(totalCount, curPos, showStr);
-                }
+                mTotal = CFileCache::GetInst()->GetPacketCount();
+                CFileCache::GetInst()->EnumPacket(FilterHandler, this);
             }
         } while (false);
 
@@ -2115,6 +2117,9 @@ public:
 
 private:
     mstring mFilterStr;
+    size_t mTotal;
+    size_t mCurPos;
+    size_t mShowCount;
 };
 
 static void _SetMainViewMode(MainViewMode mode) {
@@ -2155,7 +2160,7 @@ static void _OnSetFilter() {
         }
     }
     _SetMainViewMode(em_mode_wait_result);
-    gsProgressDlg->CreateDlg(g_main_view);
+    //gsProgressDlg->CreateDlg(g_main_view);
     gThreadPool->exec(new CFilterTask(sLastRule));
 }
 
@@ -2331,7 +2336,7 @@ VOID WINAPI NoticefSnifferViewRefush()
 {
     if (IsWindow(g_main_view))
     {
-        PostMessageA(g_main_view, MSG_UPDATE_DATA, 0, 0);
+        SendMessageA(g_main_view, MSG_UPDATE_DATA, 0, 0);
     }
 
     size_t v;

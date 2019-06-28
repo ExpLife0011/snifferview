@@ -42,4 +42,5 @@ private:
     std::mstring mDbPath;
     size_t mUniqueCount;
     std::vector<DWORD> mColourSet;
+    std::map<std::mstring, PacketAttr> mAttrSet;
 };

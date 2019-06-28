@@ -1,6 +1,8 @@
 #include <WinSock2.h>
 #include <Shlwapi.h>
+#include "common/tpool.h"
 #include "FileCache.h"
+#include "global.h"
 
 #define  CACHE_DATA_MARK        ("\a\a")
 
@@ -22,6 +24,12 @@ CFileCache *CFileCache::GetInst() {
     return sPtr;
 }
 
+CFileCache::CFileCache() {
+}
+
+CFileCache::~CFileCache() {
+}
+
 void CFileCache::Encode(mstring &str) const {
     str.repsub("\a", "@\a@");
 }
@@ -41,7 +49,7 @@ bool CFileCache::InitFileCache() {
         DeleteFileA(dbPath);
     }
 
-    CScopedLocker locker(&mWriteLocker);
+    CScopedLocker locker(&mCacheLocker);
     mCacheFile = dbPath;
     mWriteHandle = CreateFileA(
         dbPath,
@@ -52,6 +60,7 @@ bool CFileCache::InitFileCache() {
         FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
         NULL
         );
+    mMaxCache = 220000;
     return true;
 }
 
@@ -221,10 +230,10 @@ size_t CFileCache::GetPacketCount() const {
     return mPacketSet.size();
 }
 
-bool CFileCache::GetPacket(size_t index, PacketContent &packet) const {
+bool CFileCache::GetPacket(size_t index, PacketContent &content) const {
+    CScopedLocker locker(&mCacheLocker);
     PacketPosInFile pos;
     {
-        CScopedLocker locker(&mCacheLocker);
         if (index >= mPacketSet.size())
         {
             return false;
@@ -233,7 +242,36 @@ bool CFileCache::GetPacket(size_t index, PacketContent &packet) const {
         pos = mPacketSet[index];
     }
 
-    return GetPacketFromStr(GetContent(pos), packet);
+    if (pos.mInCache)
+    {
+        content =  *pos.mPtr;
+        return true;
+    } else {
+        return GetPacketFromStr(GetContent(pos), content);
+    }
+}
+
+bool CFileCache::EnumPacket(pfnPacketEnumHandler pfnHandler, void *param) {
+    CScopedLocker locker(&mCacheLocker);
+    int index = 0;
+    PacketContent tmp;
+    for (vector<PacketPosInFile>::const_iterator it = mPacketSet.begin() ; it != mPacketSet.end() ; it++, index++)
+    {
+        bool loop = true;
+        if (it->mInCache)
+        {
+            loop = pfnHandler(index, it->mPtr, param);
+        } else {
+            GetPacketFromStr(GetContent(*it), tmp);
+            loop = pfnHandler(index, &tmp, param);
+        }
+
+        if (!loop)
+        {
+            return true;
+        }
+    }
+    return true;
 }
 
 size_t CFileCache::GetShowCount() const {
@@ -242,9 +280,9 @@ size_t CFileCache::GetShowCount() const {
 }
 
 bool CFileCache::GetShow(size_t index, PacketContent &packet) const {
+    CScopedLocker locker(&mCacheLocker);
     PacketPosInFile pos;
     {
-        CScopedLocker locker(&mCacheLocker);
         if (index >= mShowSet.size())
         {
             return false;
@@ -252,8 +290,13 @@ bool CFileCache::GetShow(size_t index, PacketContent &packet) const {
         pos = mShowSet[index];
     }
 
-    mstring content = GetContent(pos);
-    return GetPacketFromStr(content, packet);
+    if (pos.mInCache)
+    {
+        packet = *pos.mPtr;
+    } else {
+        GetPacketFromStr(GetContent(pos), packet);
+    }
+    return true;
 }
 
 void CFileCache::SetShowPacket(size_t index) {
@@ -334,10 +377,10 @@ void CFileCache::ClearShow() {
 }
 
 void CFileCache::ClearCache() {
+    CScopedLocker locker1(&mCacheLocker);
     if (INVALID_HANDLE_VALUE != mWriteHandle)
     {
         {
-            CScopedLocker locker1(&mWriteLocker);
             CloseHandle(mWriteHandle);
             mWriteHandle = NULL;
             DeleteFileA(mCacheFile.c_str());
@@ -354,14 +397,47 @@ void CFileCache::ClearCache() {
         }
 
         {
+            //线程中释放动态申请的缓存
+            class CCacheClearTask : public ThreadRunable {
+            public:
+                CCacheClearTask(const list<PPacketContent> &set1) {
+                    mSet = set1;
+                }
+
+                void run() {
+                    for (list<PPacketContent>::const_iterator it = mSet.begin() ; it != mSet.end() ; it++)
+                    {
+                        delete *it;
+                    }
+                }
+            private:
+                list<PPacketContent> mSet;
+            };
+
             CScopedLocker locker2(&mCacheLocker);
+            dp(L"test1");
+            DWORD t1 = GetTickCount();
+            list<PPacketContent> set1;
+            for (vector<PacketPosInFile>::const_iterator ij = mPacketSet.begin() ; ij != mPacketSet.end() ; ij++)
+            {
+                if (ij->mInCache == true)
+                {
+                    set1.push_back(ij->mPtr);
+                }
+            }
+
+            dp(L"test2:%d", (GetTickCount() - t1));
+            t1 = GetTickCount();
+
+            gThreadPool->exec(new CCacheClearTask(set1));
+            dp(L"test3:%d", (GetTickCount() - t1));
             mShowSet.clear();
             mPacketSet.clear();
         }
     }
 }
 
-void CFileCache::PushPacket(const PacketContent &packet, bool show) {
+void CFileCache::PushToFile(const PacketContent &packet, PacketPosInFile &pos) {
     mstring content;
     mstring tmp;
     tmp.append((const char *)&packet.m_packet_init, sizeof(packet.m_packet_init));
@@ -450,9 +526,8 @@ void CFileCache::PushPacket(const PacketContent &packet, bool show) {
     content += CACHE_DATA_MARK;
 
     DWORD lowSize = 0, highSize = 0;
-    PacketPosInFile pos;
     {
-        CScopedLocker locker1(&mWriteLocker);
+        CScopedLocker locker1(&mCacheLocker);
         lowSize = GetFileSize(mWriteHandle, &highSize);
         SetFilePointer(mWriteHandle, 0, NULL, FILE_END);
 
@@ -463,13 +538,25 @@ void CFileCache::PushPacket(const PacketContent &packet, bool show) {
         WriteFile(mWriteHandle, content.c_str(), content.size(), &dw, NULL);
         FlushFileBuffers(mWriteHandle);
     }
+}
+
+void CFileCache::PushPacket(const PacketContent &packet, bool show) {
+    PacketPosInFile cache;
+    if (mPacketSet.size() < mMaxCache)
+    {
+        cache.mInCache = true;
+        cache.mPtr = new PacketContent(packet);
+    } else {
+        cache.mInCache = false;
+        PushToFile(packet, cache);
+    }
 
     {
         CScopedLocker locker2(&mCacheLocker);
         if (show)
         {
-            mShowSet.push_back(pos);
+            mShowSet.push_back(cache);
         }
-        mPacketSet.push_back(pos);
+        mPacketSet.push_back(cache);
     }
 }

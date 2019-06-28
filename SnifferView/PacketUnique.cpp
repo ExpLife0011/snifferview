@@ -102,7 +102,7 @@ bool CPacketUnique::ParserProtocol(PacketContent &msg) const {
         {
             if (msg.m_packet.size() - sizeof(IPHeader) < sizeof(ICMPHeader))
             {
-                dp(L"icmp buffer error");
+                dp(L"icmp buffer error, size:%d", msg.m_packet.size());
                 break;
             }
             PICMPHeader icmp_header = (PICMPHeader)(msg.m_packet.c_str() + itm);
@@ -115,7 +115,7 @@ bool CPacketUnique::ParserProtocol(PacketContent &msg) const {
         break;
     default:
         {
-            dp(L"type error\n");
+            dp(L"type error, protocol:%d", ip->m_ipProtocol);
         }
         break;
     }

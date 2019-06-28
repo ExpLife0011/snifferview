@@ -235,35 +235,19 @@ DWORD WINAPI PacketAnalysisThread(LPVOID p)
     return 0;
 }
 
-VOID RecheckFilterPacket()
-{
-    CFileCache::GetInst()->ClearShow();
-
-    for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
+static bool _PacketEnumHandler(size_t index, const PacketContent *info, void *param) {
+    if (IsPacketPassShow((PacketContent *)&info))
     {
-        PacketContent packet;
-        CFileCache::GetInst()->GetPacket(i, packet);
-
-        if (IsPacketPassShow(&packet))
-        {
-            CFileCache::GetInst()->SetShowPacket(i);
-        }
+        CFileCache::GetInst()->SetShowPacket(index);
     }
-    UpdatePacketsCount();
+    return true;
 }
 
 VOID RecheckShowPacket()
 {
     CFileCache::GetInst()->ClearShow();
-    for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
-    {
-        PacketContent content;
-        CFileCache::GetInst()->GetPacket(i, content);
-        if (IsPacketPassShow(&content))
-        {
-            CFileCache::GetInst()->SetShowPacket(i);
-        }
-    }
+    CFileCache::GetInst()->EnumPacket(_PacketEnumHandler);
+
     UpdatePacketsCount();
 }
 
