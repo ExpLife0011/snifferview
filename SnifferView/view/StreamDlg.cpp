@@ -5,7 +5,7 @@
 #include "../common/StrUtil.h"
 #include "../global.h"
 #include "../SyntaxHlpr/SyntaxDef.h"
-#include "../FileCache.h"
+#include "../FileCache/FileCache.h"
 
 using namespace std;
 

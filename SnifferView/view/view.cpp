@@ -24,10 +24,11 @@
 #include "../PacketUnique.h"
 #include "../process.h"
 #include "../filter.h"
-#include "../FileCache.h"
+#include "../FileCache/FileCache.h"
 #include "../PacketCache.h"
 #include "ProgressDlg.h"
 #include "../common/StrUtil.h"
+#include "../UserProc/UserTask.h"
 
 enum MainViewMode {
     em_mode_normal = 0,     //正常交互
@@ -1133,32 +1134,6 @@ BOOL ShowFileSaveDialog(IN HWND hwnd, IN const char *name, IN const char *defdir
     return FALSE;
 }
 
-BOOL ShowFileOpenDialog(IN HWND hwnd, IN const char *defdir, OUT mstring &file)
-{
-    OPENFILENAMEA ofn;  
-    ZeroMemory(&ofn, sizeof(ofn));  
-    char filename[MAX_PATH] = {0};
-    ofn.lpstrFile = filename;  
-    ofn.nMaxFile = MAX_PATH;  
-    ofn.lpstrFilter ="Packet File(*.vex)\0*.vex\0\0";  
-    ofn.lpstrDefExt = "vex";
-    ofn.lpstrTitle = "打开封包数据文件";
-    ofn.Flags = 0x0008182c;
-    if (defdir && IsDirectoryExist(defdir))
-    {
-        ofn.lpstrInitialDir = defdir;    
-    }
-    ofn.FlagsEx = OFN_EX_NOPLACESBAR;  
-    ofn.lStructSize = sizeof(OPENFILENAMEA);
-    ofn.hwndOwner = hwnd;
-    if (GetOpenFileName(&ofn))  
-    {  
-        file = filename;
-        return TRUE;
-    }
-    return FALSE;
-}
-
 VOID WINAPI OnListViewLClick(WPARAM wp, LPARAM lp)
 {
     NM_LISTVIEW *listview = (NM_LISTVIEW *)lp;
@@ -1233,8 +1208,8 @@ VOID WINAPI OnExportFile()
 
 VOID OnImportFile()
 {
-    mstring strPath;
-    ShowFileOpenDialog(g_main_view, g_def_dir.c_str(), strPath);
+    //ShowFileOpenDialog(g_main_view, g_def_dir.c_str(), strPath);
+    mstring strPath = CUserTaskMgr::GetInst()->SendTask(TASK_OPEN_DUMP, g_def_dir);
     if (!strPath.empty())
     {
         SendMessageA(g_main_view, MSG_LOAD_PACKETFILE, (WPARAM)(strPath.c_str()), NULL);

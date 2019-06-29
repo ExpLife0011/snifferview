@@ -569,11 +569,23 @@
 			Name="FileCache"
 			>
 			<File
-				RelativePath=".\FileCache.cpp"
+				RelativePath=".\FileCache\FileCache.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileCache.h"
+				RelativePath=".\FileCache\FileCache.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="UserProc"
+			>
+			<File
+				RelativePath=".\UserProc\UserTask.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\UserProc\UserTask.h"
 				>
 			</File>
 		</Filter>

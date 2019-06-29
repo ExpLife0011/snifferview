@@ -2,7 +2,7 @@
 #include <common.h>
 #include <base64.h>
 #include "dump.h"
-#include "FileCache.h"
+#include "FileCache/FileCache.h"
 
 static size_t s_check_size = 0;
 

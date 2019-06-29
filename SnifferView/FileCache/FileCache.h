@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
-#include "analysis.h"
+#include "../analysis.h"
 #include "mstring.h"
 #include "LockBase.h"
 

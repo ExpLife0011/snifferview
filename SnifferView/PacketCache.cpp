@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include "common/StrUtil.h"
-#include "FileCache.h"
+#include "FileCache/FileCache.h"
 #include "PacketCache.h"
 #include "global.h"
 

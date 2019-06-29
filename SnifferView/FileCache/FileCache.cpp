@@ -1,8 +1,8 @@
 #include <WinSock2.h>
 #include <Shlwapi.h>
-#include "common/tpool.h"
+#include "../common/tpool.h"
 #include "FileCache.h"
-#include "global.h"
+#include "../global.h"
 
 #define  CACHE_DATA_MARK        ("\a\a")
 

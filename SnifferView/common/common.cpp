@@ -13,7 +13,9 @@
 #include <iphlpapi.h>
 #include <CommCtrl.h>
 #include <common.h>
+#include <TlHelp32.h>
 #include <mstring.h>
+#include "StrUtil.h"
 
 #pragma comment(lib, "WtsApi32.lib")
 #pragma comment(lib, "shlwapi.lib")
@@ -1700,4 +1702,170 @@ mstring GetWindowStrA(HWND hwnd) {
         GetWindowTextA(hwnd, ptr, size + 4);
         return ptr;
     }
+}
+
+mstring RegGetStrValueA(HKEY hKey, const mstring &subPath, const mstring &valName) {
+    return WtoA(RegGetStrValueW(hKey, AtoW(subPath), AtoW(valName)));
+}
+
+ustring RegGetStrValueW(HKEY hKey, const ustring &subPath, const ustring &valName) {
+    DWORD dwLength = 0;
+    LPVOID pBuf = NULL;
+    DWORD dwType = 0;
+    SHGetValueW(
+        hKey,
+        subPath.c_str(),
+        valName.c_str(),
+        &dwType,
+        (LPVOID)pBuf,
+        &dwLength
+        );
+    if (REG_SZ != dwType || !dwLength)
+    {
+        return L"";
+    }
+
+    dwLength += 2;
+    pBuf = new BYTE[dwLength];
+    memset(pBuf, 0x00, dwLength);
+    SHGetValueW(
+        hKey,
+        subPath.c_str(),
+        valName.c_str(),
+        NULL,
+        pBuf,
+        &dwLength
+        );
+    std::wstring wstrRes = (LPCWSTR)pBuf;
+    delete []pBuf;
+    return wstrRes;
+}
+
+//获取当前用户进程的pid
+static DWORD _GetCurrentUserPid() {
+    HWND hShellWnd = FindWindowA("Shell_TrayWnd", NULL);
+
+    DWORD pid = 0;
+    if (IsWindow(hShellWnd))
+    {
+        GetWindowThreadProcessId(hShellWnd, &pid);
+    } else {
+        do
+        {
+            PROCESSENTRY32 procEntry;
+            HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            if (hSnap == INVALID_HANDLE_VALUE)
+            {
+                break;
+            }
+
+            procEntry.dwSize = sizeof(PROCESSENTRY32W);
+            if (Process32First(hSnap, &procEntry))
+            {
+                do
+                {
+                    if (lstrcmpA(procEntry.szExeFile, "explorer.exe") == 0)
+                    {
+                        pid = procEntry.th32ProcessID;
+                        break;
+                    }
+
+                } while (Process32Next(hSnap, &procEntry));
+            }
+            CloseHandle(hSnap);
+        } while (0);
+    }
+    return pid;
+}
+
+//高权限进程启动当前用户权限进程
+HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
+    HANDLE hProcess = NULL;
+    HANDLE hPToken = NULL;
+    HANDLE hUserTokenDup = NULL;
+
+    do
+    {
+        DWORD pid = _GetCurrentUserPid();
+        if (!pid)
+        {
+            break;;
+        }
+
+        HANDLE hForkProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+        if (hProcess == NULL)
+        {
+            break;
+        }
+
+        if(!OpenProcessToken(hProcess, TOKEN_ALL_ACCESS_P,&hPToken))
+        {
+            break;
+        }
+
+        TOKEN_LINKED_TOKEN admin;
+        DWORD ret = 0;
+
+        if (GetTokenInformation(hPToken, (TOKEN_INFORMATION_CLASS)TokenLinkedToken, &admin, sizeof(TOKEN_LINKED_TOKEN), &ret))
+        {
+            hUserTokenDup = admin.LinkedToken;
+        } else {
+            TOKEN_PRIVILEGES tp;
+            LUID luid;
+            if (LookupPrivilegeValue(NULL,SE_DEBUG_NAME,&luid))
+            {
+                tp.PrivilegeCount =1;
+                tp.Privileges[0].Luid =luid;
+                tp.Privileges[0].Attributes =SE_PRIVILEGE_ENABLED;
+            }
+            //复制token
+            DuplicateTokenEx(hPToken, MAXIMUM_ALLOWED, NULL, SecurityIdentification,TokenPrimary, &hUserTokenDup);
+        }
+
+        LPVOID pEnv = NULL;
+        DWORD dwCreationFlags = CREATE_PRESERVE_CODE_AUTHZ_LEVEL;
+
+        // hUserTokenDup为当前登陆用户的令牌
+        if(CreateEnvironmentBlock(&pEnv, hUserTokenDup, TRUE))
+        {
+            dwCreationFlags|= CREATE_UNICODE_ENVIRONMENT;
+        }
+        else
+        {
+            //环境变量创建失败仍然可以创建进程，
+            //但会影响到后面的进程获取环境变量内容
+            pEnv = NULL;
+        }
+
+        PROCESS_INFORMATION pi = {0};
+        STARTUPINFOA si = { sizeof(si) };
+
+        if (show)
+        {
+            si.dwFlags = STARTF_USESHOWWINDOW;
+            si.wShowWindow = SW_SHOW;
+        } else {
+            si.wShowWindow = SW_HIDE;
+        }
+
+        if (CreateProcessAsUserA(
+            hUserTokenDup,
+            NULL,
+            (LPSTR) command.c_str(),
+            NULL,
+            NULL,
+            FALSE,
+            dwCreationFlags,
+            pEnv,
+            NULL,
+            &si,
+            &pi
+            ))
+        {
+            hProcess = pi.hProcess;
+            CloseHandle(pi.hThread);
+        }
+    } while (0);
+
+    return hProcess;
 }

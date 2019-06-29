@@ -158,6 +158,8 @@ public:
     T *GetMemory(int size) {
         if (size < mSize)
         {
+
+
             return mBuffer;
         } else {
             if (mBuffer)
@@ -184,4 +186,9 @@ private:
 };
 
 mstring GetWindowStrA(HWND hwnd);
+
+mstring RegGetStrValueA(HKEY hKey, const mstring &subPath, const mstring &valName);
+ustring RegGetStrValueW(HKEY hKey, const ustring &subPath, const ustring &valName);
+//高权限进程启动当前用户权限进程
+HANDLE CreateProcWithCurrentUser(const mstring &command, bool show);
 #endif

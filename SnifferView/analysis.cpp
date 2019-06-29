@@ -6,7 +6,7 @@
 #include "analysis.h"
 #include "filter.h"
 #include "view/view.h"
-#include "FileCache.h"
+#include "FileCache/FileCache.h"
 #include "PacketCache.h"
 
 //最大缓存封包数量
