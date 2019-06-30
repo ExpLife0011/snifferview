@@ -1769,7 +1769,6 @@ static DWORD _GetCurrentUserPid() {
                         pid = procEntry.th32ProcessID;
                         break;
                     }
-
                 } while (Process32Next(hSnap, &procEntry));
             }
             CloseHandle(hSnap);
@@ -1793,12 +1792,12 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         }
 
         HANDLE hForkProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-        if (hProcess == NULL)
+        if (hForkProc == NULL)
         {
             break;
         }
 
-        if(!OpenProcessToken(hProcess, TOKEN_ALL_ACCESS_P,&hPToken))
+        if(!OpenProcessToken(hForkProc, TOKEN_ALL_ACCESS_P,&hPToken))
         {
             break;
         }
@@ -1810,6 +1809,8 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         {
             hUserTokenDup = admin.LinkedToken;
         } else {
+            int err = GetLastError();
+
             TOKEN_PRIVILEGES tp;
             LUID luid;
             if (LookupPrivilegeValue(NULL,SE_DEBUG_NAME,&luid))
@@ -1867,5 +1868,14 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         }
     } while (0);
 
+    if (hPToken)
+    {
+        CloseHandle(hPToken);
+    }
+
+    if (hUserTokenDup)
+    {
+        CloseHandle(hUserTokenDup);
+    }
     return hProcess;
 }

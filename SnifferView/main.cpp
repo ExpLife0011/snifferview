@@ -23,6 +23,7 @@
 #include "sfvserv.h"
 #include "StrUtil.h"
 #include "common/tpool.h"
+#include "UserProc/UserTask.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "Advapi32.lib")
@@ -31,8 +32,7 @@
 
 using namespace std;
 
-WorkState g_work_state = em_sniffer;
-UserState g_eUserState = em_user;
+WorkState g_work_state = em_work_launcher;
 mstring g_sniffer_file;
 BOOL g_analysis_state = FALSE;
 mstring gInstallPath;
@@ -53,15 +53,6 @@ static BOOL _AnalysisCmd()
     BOOL state = FALSE;
     do 
     {
-        if (IsAdminUser())
-        {
-            g_eUserState = em_admin;
-        }
-        else
-        {
-            g_eUserState = em_user;
-        }
-
         LPWSTR* args = CommandLineToArgvW(um.c_str(), &count);
         if (count < 1)
         {
@@ -70,7 +61,7 @@ static BOOL _AnalysisCmd()
 
         if (1 == count)
         {
-            g_work_state = em_sniffer;
+            g_work_state = em_work_sniffer;
             g_config_path = REG_SNIFFER_CONFIG_PATH;
             state = TRUE;
         }
@@ -80,13 +71,13 @@ static BOOL _AnalysisCmd()
             vm.makelower();
             if (vm == "/s" || vm == "-s")
             {
-                g_work_state = em_sniffer;
+                g_work_state = em_work_sniffer;
                 g_config_path = REG_SNIFFER_CONFIG_PATH;
                 state = TRUE;
             }
             else if (vm == "/f" || vm == "-f")
             {
-                g_work_state = em_analysis;
+                g_work_state = em_work_analysis;
                 if (count > 2)
                 {
                     g_sniffer_file = WtoA(args[2]);
@@ -96,14 +87,18 @@ static BOOL _AnalysisCmd()
             }
             else if (vm == "/sv" || vm == "\\sv" || vm == "-sv")
             {
-                g_work_state = em_sniffer;
-                g_eUserState = em_system;
+                g_work_state = em_work_sniffer;
                 g_config_path = REG_SNIFFER_CONFIG_PATH;
                 state = TRUE;
             }
             else if (vm == "-service")
             {
-                g_work_state = em_service;
+                g_work_state = em_work_service;
+                state = TRUE;
+            }
+            else if (vm == "-user")
+            {
+                g_work_state = em_work_user;
                 state = TRUE;
             }
         }
@@ -238,9 +233,9 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2,2), &wsaData);
-    do 
+    do
     {
-        if (em_sniffer == g_work_state)
+        if (em_work_launcher == g_work_state)
         {
             HWND hwd = FindWindowA(NULL, SNIFFER_STATE_NAME);
             if (!hwd)
@@ -253,7 +248,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
                 break;
             }
 
-            if (em_user == g_eUserState)
+            if (!IsAdminUser())
             {
                 MessageBoxA(0, "检测到SnifferView没有管理员权限，可能无法正常的嗅探网络数据。", "没有管理员权限", MB_OK | MB_ICONWARNING);
             }
@@ -262,7 +257,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
                 #ifndef _DEBUG
                 WCHAR wszSelf[MAX_PATH] = {0};
                 GetModuleFileNameW(NULL, wszSelf, MAX_PATH);
-                if ((em_system != g_eUserState) && _InstallSnifferServ())
+                if (_InstallSnifferServ())
                 {
                     DWORD dwSession = 1;
                     ProcessIdToSessionId(GetCurrentProcessId(), &dwSession);
@@ -275,15 +270,24 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
                 }
                 #endif
             }
+            g_work_state = em_work_sniffer;
             ShowSnifferView();
-        }
-        else if (em_analysis == g_work_state)
+        } else if (em_work_sniffer == g_work_state)
         {
             ShowSnifferView();
         }
-        else if (em_service == g_work_state)
+        else if (em_work_analysis == g_work_state)
+        {
+            ShowSnifferView();
+        }
+        else if (em_work_service == g_work_state)
         {
             RunSinfferServ();
+        }
+        else if (em_work_user == g_work_state)
+        {
+            CreateEventA(NULL, FALSE, FALSE, EVENT_USER_PROC);
+            CUserTaskMgr::GetInst()->StartService();
         }
     } while ( FALSE);
     WSACleanup();

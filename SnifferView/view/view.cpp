@@ -623,7 +623,7 @@ HWND CreateToolBar(HWND parent)
         //ImageList_AddMasked(image, disable, 0xc0c0c0);
         SendMessage(toolbar, TB_SETIMAGELIST, 0, (LPARAM)image);
         SendMessage(toolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
-        if (g_work_state == em_sniffer)
+        if (g_work_state == em_work_sniffer)
         {
             SendMessage(toolbar, TB_ADDBUTTONS, (WPARAM)(sizeof(tbb_sniffer) / sizeof(TBBUTTON)), (LPARAM)(LPTBBUTTON)&tbb_sniffer);
         }
@@ -710,7 +710,7 @@ VOID InitWindowPos()
 //初始化窗口菜单
 VOID InitWindowMenu()
 {
-    if (g_work_state == em_analysis)
+    if (g_work_state == em_work_analysis)
     {
         HMENU menu = GetMenu(g_main_view);
         HMENU sub = GetSubMenu(menu, 0);
@@ -869,6 +869,29 @@ static LRESULT CALLBACK _KeyCaptureProc(int code, WPARAM wp, LPARAM lp) {
     return CallNextHookEx(gsKeyboardHook, code, wp, lp);
 }
 
+//启动普通用户权限进程
+static void _StartUserProc() {
+    HANDLE h = OpenEventA(EVENT_ALL_ACCESS, FALSE, EVENT_USER_PROC);
+    if (h)
+    {
+        CloseHandle(h);
+        return;
+    }
+
+    char sniffPath[512];
+    GetModuleFileNameA(NULL, sniffPath, sizeof(sniffPath));
+
+#ifdef _DEBUG
+    //调试方便，复制副本并启动
+    mstring src = sniffPath;
+    PathAppendA(sniffPath, "..\\SniffUser.exe");
+    CopyFileA(src.c_str(), sniffPath, TRUE);
+#endif
+
+    mstring command = FormatA("\"%hs\" -user", sniffPath);
+    CreateProcWithCurrentUser(command, true);
+}
+
 VOID OnInitDialog(HWND hdlg)
 {
     g_main_view = hdlg;
@@ -911,7 +934,7 @@ VOID OnInitDialog(HWND hdlg)
     s_timer = SetTimer(hdlg, MSG_TIMER_EVENT_ID, 100, NULL);
     //s_toolbar = CreateToolBar(hdlg);
     SendMessageA(s_toolbar, TB_GETITEMRECT, s_search_idex, (LPARAM)&s_search_rect);
-    if (g_work_state == em_sniffer)
+    if (g_work_state == em_work_sniffer)
     {
         s_toolbar_proc = (PWIN_PROC)SetWindowLong(s_toolbar, GWL_WNDPROC, (long)ToolbarCtrlProc);
     }
@@ -924,14 +947,16 @@ VOID OnInitDialog(HWND hdlg)
     InitWindowPos();
     AdustWindowItem();
 
-    if (g_work_state == em_sniffer)
+    if (g_work_state == em_work_sniffer)
     {
         CFileCache::GetInst()->InitFileCache();
         CPacketCacheMgr::GetInst()->InitCacheMgr();
         _InitSnifWatcher();
         SetWindowTextA(hdlg, SNIFFER_STATE_NAME);
+        //启动当前用户态进程
+        _StartUserProc();
     }
-    else if(g_work_state == em_analysis)
+    else if(g_work_state == em_work_analysis)
     {
         if (g_sniffer_file.size() != 0)
         {
@@ -1004,13 +1029,13 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
         AppendMenuA(menu, MF_DISABLED, POPU_MENU_ITEM_STREAM_ID, POPU_MENU_ITEM_STREAM_NAME);
     }
 
-    if (g_work_state == em_sniffer)
+    if (g_work_state == em_work_sniffer)
     {
         AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_NETCARD_CONFIG_ID, POPU_MENU_ITEM_NETCARD_CONFIG_NAME);
     }
 
     AppendMenuA(menu, MF_MENUBARBREAK, 0, 0);
-    if (g_work_state == em_sniffer)
+    if (g_work_state == em_work_sniffer)
     {
         if (IsSnifferSuspend())
         {
@@ -1031,7 +1056,7 @@ VOID WINAPI OnListViewRClick(HWND hdlg, WPARAM wp, LPARAM lp)
         AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_POPUP_ID, POPU_MENU_ITEM_POPUP_NAME);
     }
 
-    if (g_work_state == em_sniffer)
+    if (g_work_state == em_work_sniffer)
     {
         AppendMenuA(menu, MF_ENABLED, POPU_MENU_ITEM_CLEAR_ID, POPU_MENU_ITEM_CLEAR_NAME);
         AppendMenuA(menu, MF_MENUBARBREAK, 0, 0);
@@ -1630,7 +1655,7 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
             break;
         case  0x53://ctrl + s
             {
-                if (g_work_state == em_sniffer)
+                if (g_work_state == em_work_sniffer)
                 {
                     param = POPU_MENU_ITEM_SUSPEND_ID;
                 }
@@ -1638,7 +1663,7 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
             break;
         case  0x52://ctrl + r
             {
-                if (g_work_state == em_sniffer)
+                if (g_work_state == em_work_sniffer)
                 {
                     param = POPU_MENU_ITEM_RESET_ID;
                 }
@@ -1646,7 +1671,7 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
             break;
         case  0x4e://ctrl + n
             {
-                if (g_work_state == em_sniffer)
+                if (g_work_state == em_work_sniffer)
                 {
                     param = POPU_MENU_ITEM_NETCARD_CONFIG_ID;
                 }
@@ -1659,7 +1684,7 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
             break;
         case  0x4f://ctrl + o
             {
-                if (g_work_state == em_sniffer)
+                if (g_work_state == em_work_sniffer)
                 {
                     param = POPU_MENU_ITEM_EXPORT_ID;
                 }
@@ -1672,7 +1697,7 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
             break;
         case  0x58://ctrl + x
             {
-                if (g_work_state == em_sniffer)
+                if (g_work_state == em_work_sniffer)
                 {
                     param = POPU_MENU_ITEM_CLEAR_ID;
                 }
@@ -1958,7 +1983,7 @@ static VOID OnLoadPacketFile(LPCSTR szFile)
     {
         return;
     }
-    if (g_work_state == em_analysis && !g_analysis_state)
+    if (g_work_state == em_work_analysis && !g_analysis_state)
     {
         OnAnalysisDumpFile(szFile);
     }
@@ -2285,7 +2310,7 @@ DWORD CALLBACK ViewProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
         break;
     case  WM_CLOSE:
         {
-            if (g_work_state == em_sniffer)
+            if (g_work_state == em_work_sniffer)
             {
                 OnSnifferExit();
             }
@@ -2345,11 +2370,11 @@ VOID WINAPI UpdatePacketsCount()
     if (IsWindow(s_status))
     {
         mstring v;
-        if(g_work_state == em_sniffer)
+        if(g_work_state == em_work_sniffer)
         {
             v.format("封包总数：%d  符合显示：%d", CFileCache::GetInst()->GetPacketCount(), CFileCache::GetInst()->GetShowCount());
         }
-        else if (g_work_state == em_analysis)
+        else if (g_work_state == em_work_analysis)
         {
             v.format("封包总数：%d  符合显示：%d", CFileCache::GetInst()->GetPacketCount(), CFileCache::GetInst()->GetShowCount());
         }
