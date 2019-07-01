@@ -1234,14 +1234,21 @@ static void _OnExportFile()
     gThreadPool->exec(new CExportTask());
 }
 
-VOID OnImportFile()
+static void _OnImportFile()
 {
-    mstring strPath = CUserTaskMgr::GetInst()->SendTask(TASK_OPEN_DUMP, g_def_dir);
-    if (!strPath.empty())
-    {
-        SendMessageA(g_main_view, MSG_LOAD_PACKETFILE, (WPARAM)(strPath.c_str()), NULL);
-    }
-    return;
+    class CImportTask : public ThreadRunable {
+    public:
+        void run() 
+        {
+            mstring strPath = CUserTaskMgr::GetInst()->SendTask(TASK_OPEN_DUMP, g_def_dir);
+            if (strPath != RESULT_NULL)
+            {
+                SendMessageA(g_main_view, MSG_LOAD_PACKETFILE, (WPARAM)(strPath.c_str()), NULL);
+            }
+        }
+    };
+
+    gThreadPool->exec(new CImportTask());
 }
 
 //…Ë÷√toolbar–≈œ¢
@@ -1402,7 +1409,7 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
         break;
     case  POPU_MENU_ITEM_IMPORT_ID:
         {
-            OnImportFile();
+            _OnImportFile();
         }
         break;
     case  POPU_MENU_ITEM_CLEAR_ID:

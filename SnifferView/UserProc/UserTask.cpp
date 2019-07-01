@@ -165,6 +165,8 @@ void CUserTaskMgr::StartService(DWORD parentPid) {
     mParentPid = parentPid;
     mTaskNotify = CreateEventA(NULL, FALSE, FALSE, EVENT_TASK_NOTIFY);
     HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, mParentPid);
+    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_CACHE);
+    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT);
 
     if (!mTaskNotify || !process)
     {
