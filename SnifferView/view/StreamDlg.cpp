@@ -80,7 +80,7 @@ void CStreamDlg::OnInitDlg(WPARAM wp, LPARAM lp) {
     int cx = (cw / 4 * 3);
     int cy = (ch / 4 * 3);
     SetWindowPos(mhWnd, HWND_TOP, 0, 0, cx, cy, SWP_NOMOVE);
-    CentreWindow(NULL, mhWnd);
+    CenterWindow(NULL, mhWnd);
 
     RECT wndRect = {0};
     GetWindowRect(mhWnd, &wndRect);

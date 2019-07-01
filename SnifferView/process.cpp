@@ -69,7 +69,7 @@ static VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 		s_ico_data = mm.hIcon;
 	}
 	SendMessage(s_ico, STM_SETICON, (WPARAM)s_ico_data, 0);
-	CentreWindow(GetParent(hdlg), hdlg);
+	CenterWindow(GetParent(hdlg), hdlg);
 }
 
 static VOID OnClose(HWND hdlg, WPARAM wp, LPARAM lp)

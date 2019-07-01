@@ -23,7 +23,7 @@ static int s_current_sel = 0;
 static VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 {
 	RefushSnifferServers();
-	CentreWindow(g_main_view, hdlg);
+	CenterWindow(g_main_view, hdlg);
 	ShowWindow(hdlg, SW_SHOW);
 	s_net_list = GetDlgItem(hdlg, IDC_COM_NETS);
 	s_group = GetDlgItem(hdlg, IDC_ST_NETCARD_MSG);

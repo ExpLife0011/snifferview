@@ -4,6 +4,7 @@
 
 #define TASK_OPEN_DUMP    "OpenDump"
 #define TASK_SAVE_DUMP    "SaveDump"
+#define RESULT_NULL       "nullResult"
 
 class CUserTaskMgr {
 public:
@@ -16,7 +17,12 @@ private:
     virtual ~CUserTaskMgr();
     std::mstring RunTaskInService(const std::mstring &taskType, const std::mstring &taskParam) const;
     void OnTask() const;
+
+    static UINT_PTR CALLBACK OFNHookProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp);
     static DWORD __stdcall ParentCheckThread(LPVOID param);
+
+    std::mstring ShowOpenFileDlg(const std::mstring &defDlg) const;
+    std::mstring ShowSaveFileDlg(const std::mstring &defName, const std::mstring &defDlg) const;
 
 private:
     bool mStart;

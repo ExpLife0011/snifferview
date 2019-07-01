@@ -693,7 +693,7 @@ VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 	s_netstat_view = hdlg;
 	s_netstat_list = GetDlgItem(hdlg, IDC_ST_LIST);
     s_edit = GetDlgItem(s_netstat_view, IDC_NETSTAT_EDT_SEARCH);
-	CentreWindow(GetParent(hdlg), hdlg);
+	CenterWindow(GetParent(hdlg), hdlg);
 	InitListView();
 	s_statusbar = CreateNetstatusBar(hdlg);
 	SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
@@ -745,7 +745,7 @@ VOID OnActiveWindow(HWND hdlg, WPARAM wp, LPARAM lp)
 
 	if (!IsZoomed(hdlg))
 	{
-		CentreWindow(GetParent(hdlg), s_netstat_view);
+		CenterWindow(GetParent(hdlg), s_netstat_view);
 		RECT rect;
 		GetWindowRect(s_netstat_view, &rect);
 		if (rect.left < 0 || rect.top < 0)

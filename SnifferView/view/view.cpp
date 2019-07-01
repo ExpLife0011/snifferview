@@ -942,7 +942,7 @@ VOID OnInitDialog(HWND hdlg)
     }
 
     SetWindowPos(hdlg, NULL, 0, 0, 1100, 600, SWP_NOMOVE | SWP_NOZORDER);
-    CentreWindow(NULL, hdlg);
+    CenterWindow(NULL, hdlg);
     //初始化窗口菜单
     InitWindowMenu();
     //初始化窗口控件的位置
@@ -1153,8 +1153,8 @@ BOOL ShowFileSaveDialog(IN HWND hwnd, IN const char *name, IN const char *defdir
     ofn.FlagsEx = OFN_EX_NOPLACESBAR;  
     ofn.lStructSize = sizeof(OPENFILENAMEA);
     ofn.hwndOwner = hwnd;
-    if (GetSaveFileName(&ofn))  
-    {  
+    if (GetSaveFileNameA(&ofn))  
+    {
         file = filename;
         return TRUE;
     }
@@ -1185,25 +1185,25 @@ static BOOL WINAPI _DressLoggedOnUser()
     return FALSE;
 }
 
-VOID WINAPI OnExportFile()
+static void _OnExportFile()
 {
-    mstring file;
-    SYSTEMTIME vv;
-    GetLocalTime(&vv);
-    mstring name;
-    name.format("%04d%02d%02d%02d%02d%02d%03d", vv.wYear, vv.wMonth, vv.wDay, vv.wHour, vv.wMinute, vv.wSecond, vv.wMilliseconds);
-    //_DressLoggedOnUser();
-    do 
-    {
-        if (ShowFileSaveDialog(g_main_view, name.c_str(), g_def_dir.c_str(), file))
+    class CExportTask : public ThreadRunable {
+    public:
+        void run() 
         {
+            mstring file = CUserTaskMgr::GetInst()->SendTask(TASK_SAVE_DUMP, g_def_dir.c_str());
+            if (file == RESULT_NULL)
+            {
+                return;
+            }
+
             if (INVALID_FILE_ATTRIBUTES != GetFileAttributesA(file.c_str()))
             {
                 mstring msg;
                 msg.format("文件%hs已存在，是否覆盖？", file.c_str());
                 if (IDOK != MessageBoxA(g_main_view, msg.c_str(), "警告", MB_OKCANCEL | MB_ICONWARNING))
                 {
-                    break;
+                    return;
                 }
             }
 
@@ -1229,13 +1229,13 @@ VOID WINAPI OnExportFile()
                 }
             }
         }
-    } while (FALSE);
-    //RevertToSelf();
+    };
+
+    gThreadPool->exec(new CExportTask());
 }
 
 VOID OnImportFile()
 {
-    //ShowFileOpenDialog(g_main_view, g_def_dir.c_str(), strPath);
     mstring strPath = CUserTaskMgr::GetInst()->SendTask(TASK_OPEN_DUMP, g_def_dir);
     if (!strPath.empty())
     {
@@ -1387,7 +1387,7 @@ VOID WINAPI OnCommand(WPARAM wp, LPARAM lp)
         break;
     case  POPU_MENU_ITEM_EXPORT_ID:
         {
-            OnExportFile();
+            _OnExportFile();
         }
         break;
     case  POPU_MENU_ITEM_ABOUT_ID:
@@ -1827,7 +1827,7 @@ VOID OnAcitveWindow()
     
     if (!IsZoomed(g_main_view))
     {
-        CentreWindow(NULL, g_main_view);
+        CenterWindow(NULL, g_main_view);
         RECT rect;
         GetWindowRect(g_main_view, &rect);
         if (rect.left < 0 || rect.top < 0)

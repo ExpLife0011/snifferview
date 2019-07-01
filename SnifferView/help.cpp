@@ -84,5 +84,5 @@ VOID WINAPI ShowHelpView(HWND parent)
 //	SetForegroundWindow(hwnd);
 //	SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 //	SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 900, 600, SWP_NOMOVE);
-//	CentreWindow(parent, hwnd);
+//	CenterWindow(parent, hwnd);
 //}

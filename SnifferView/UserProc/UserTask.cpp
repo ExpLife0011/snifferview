@@ -11,8 +11,6 @@
 #define PATH_TASK_CACHE     "software\\snifferview\\UserTask"
 #define PATH_TASK_RESULT    "software\\snifferview\\TaskResult"
 
-#define RESULT_NULL       "nullResult"
-
 using namespace std;
 
 CUserTaskMgr *CUserTaskMgr::GetInst() {
@@ -25,31 +23,86 @@ CUserTaskMgr *CUserTaskMgr::GetInst() {
     return sPtr;
 }
 
+UINT_PTR CUserTaskMgr::OFNHookProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp) {
+    if (msg == WM_INITDIALOG)
+    {
+        dp(L"init fileDlg");
+        HWND parent = GetParent(hdlg);
+        SetForegroundWindow(parent);
+        CenterWindow(NULL, parent);
+
+        SetWindowPos(parent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    }
+    return 0;
+}
+
+mstring CUserTaskMgr::ShowOpenFileDlg(const mstring &defDlg) const {
+    OPENFILENAMEA ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    char filename[MAX_PATH] = {0};
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter ="Packet File(*.vex)\0*.vex\0\0";
+    ofn.lpstrDefExt = "vex";
+    ofn.lpstrTitle = "打开封包数据文件";
+    ofn.Flags = OFN_ENABLESIZING | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ENABLEHOOK;
+    ofn.FlagsEx = OFN_EX_NOPLACESBAR;
+    ofn.lStructSize = sizeof(OPENFILENAMEA);
+    ofn.lpfnHook = OFNHookProc;
+    ofn.hwndOwner = NULL;
+    mstring file;
+    if (GetOpenFileNameA(&ofn))  
+    {
+        dp(L"success 1, fileName:%hs", filename);
+        return filename;
+    } else {
+        return RESULT_NULL;
+    }
+}
+
+mstring CUserTaskMgr::ShowSaveFileDlg(const mstring &defName, const mstring &defDlg) const {
+    OPENFILENAMEA ofn = { sizeof(ofn) };
+    char filename[MAX_PATH] = {0};
+    strcpy_s(filename, sizeof(filename), defName.c_str());
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter ="Packet File(*.vex)\0*.vex\0\0";  
+    ofn.lpstrDefExt = "vex";
+    ofn.lpstrTitle = "保存封包数据文件";
+    ofn.Flags = OFN_ENABLESIZING | OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ENABLEHOOK;
+    //if (defDlg.size() && IsDirectoryExist(defDlg.c_str()))
+    //{
+    //    ofn.lpstrInitialDir = defDlg.c_str();
+    //}
+    ofn.FlagsEx = OFN_EX_NOPLACESBAR;
+    ofn.lpfnHook = OFNHookProc;
+    ofn.hwndOwner = NULL;
+
+    dp(L"test3");
+    if (GetSaveFileNameA(&ofn))  
+    {
+        dp(L"success 2, fileName:%hs", filename);
+        return filename;
+    } else {
+        dp(L"err2:%hs", GetStdErrorStr().c_str());
+    }
+    return RESULT_NULL;
+}
+
 mstring CUserTaskMgr::RunTaskInService(const mstring &taskType, const mstring &taskParam) const {
     mstring result;
     if (taskType == TASK_OPEN_DUMP)
     {
-        OPENFILENAMEA ofn;
-        ZeroMemory(&ofn, sizeof(ofn));
-        char filename[MAX_PATH] = {0};
-        ofn.lpstrFile = filename;
-        ofn.nMaxFile = MAX_PATH;
-        ofn.lpstrFilter ="Packet File(*.vex)\0*.vex\0\0";
-        ofn.lpstrDefExt = "vex";
-        ofn.lpstrTitle = "打开封包数据文件";
-        ofn.Flags = 0x0008182c;
-        ofn.FlagsEx = OFN_EX_NOPLACESBAR;  
-        ofn.lStructSize = sizeof(OPENFILENAMEA);
-        ofn.hwndOwner = NULL;
-        mstring file;
-        if (GetOpenFileName(&ofn))  
-        {  
-            result = filename;
-        } else {
-            result = RESULT_NULL;
-        }
+        return ShowOpenFileDlg(taskParam);
     } else if (taskType == TASK_SAVE_DUMP)
     {
+        dp(L"save dump");
+        SYSTEMTIME time;
+        GetLocalTime(&time);
+        mstring name;
+        name.format("%04d%02d%02d%02d%02d%02d%03d", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+
+        return ShowSaveFileDlg(name, taskParam);
     }
     return result;
 }
@@ -88,6 +141,7 @@ void CUserTaskMgr::OnTask() const {
             mstring notify = RegGetStrValueA(hKey, name, "taskNotify");
 
             mstring result = RunTaskInService(task, param);
+            dp(L"result:%hs", result.c_str());
             SHSetValueA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT, notify.c_str(), REG_SZ, result.c_str(), result.size());
             HANDLE complete = OpenEventA(EVENT_MODIFY_STATE, FALSE, notify.c_str());
 
@@ -167,8 +221,8 @@ mstring CUserTaskMgr::SendTask(const mstring &task, const mstring &param) const 
 
     WaitForSingleObject(complete, INFINITE);
     CloseHandle(complete);
-    string result = RegGetStrValueA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT, magic);
-    SHDeleteValueA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT, magic.c_str());
+    string result = RegGetStrValueA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT, nameNotify.c_str());
+    SHDeleteValueA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT, nameNotify.c_str());
     return result;
 }
 

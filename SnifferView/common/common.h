@@ -27,7 +27,7 @@ struct AdapterMsg
 	bool m_dhcp_enable;
 };
 
-VOID WINAPI CentreWindow(HWND hParent, HWND hChild);
+void CenterWindow(HWND hParent, HWND hChild);
 
 //打印调试信息
 VOID PrintDbgInternal(LPCWSTR wszTarget, LPCSTR szFile, DWORD dwLine, LPCWSTR wszFormat, ...);

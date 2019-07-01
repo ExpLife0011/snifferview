@@ -17,7 +17,7 @@ Wireshark的过滤语句，支持Tcp，Udp，Http等协议的分析\
 
 static VOID OnInitDialog(HWND hdlg, WPARAM wp, LPARAM lp)
 {
-	CentreWindow(GetParent(hdlg), hdlg);
+	CenterWindow(GetParent(hdlg), hdlg);
 	s_about_ico = GetDlgItem(hdlg, IDC_ABOUT_ICO);
 	s_about_ver = GetDlgItem(hdlg, IDC_ABOUT_VER);
 	s_about_msg = GetDlgItem(hdlg, IDC_EDT_ABOUT);

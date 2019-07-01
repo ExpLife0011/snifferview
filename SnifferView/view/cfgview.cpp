@@ -112,7 +112,7 @@ INT_PTR CALLBACK ConfigProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
     {
     case  WM_INITDIALOG:
         {
-            CentreWindow(g_main_view, hdlg);
+            CenterWindow(g_main_view, hdlg);
             ShowWindow(hdlg, SW_SHOW);
             s_config_view = hdlg;
             s_ck_net = GetDlgItem(hdlg, IDC_RDO_N);
