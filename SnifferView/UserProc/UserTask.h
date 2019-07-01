@@ -8,7 +8,7 @@
 class CUserTaskMgr {
 public:
     static CUserTaskMgr *GetInst();
-    void StartService();
+    void StartService(DWORD parent);
     std::mstring SendTask(const std::mstring &task, const std::mstring &param) const;
 
 private:
@@ -16,9 +16,12 @@ private:
     virtual ~CUserTaskMgr();
     std::mstring RunTaskInService(const std::mstring &taskType, const std::mstring &taskParam) const;
     void OnTask() const;
+    static DWORD __stdcall ParentCheckThread(LPVOID param);
 
 private:
     bool mStart;
     HANDLE mTaskThread;
     HANDLE mTaskNotify;
+    DWORD mParentPid;
+    bool mExitService;
 };

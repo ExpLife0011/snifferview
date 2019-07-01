@@ -43,6 +43,7 @@ ThreadPool *gThreadPool = NULL;
 HINSTANCE g_m;
 SECURITY_ATTRIBUTES g_sa;
 SECURITY_DESCRIPTOR g_sd;
+static DWORD gsParentPid = 0;
 
 //命令行参数解析 /s或者空 嗅探模式， /f数据文件分析模式
 static BOOL _AnalysisCmd()
@@ -61,7 +62,7 @@ static BOOL _AnalysisCmd()
 
         if (1 == count)
         {
-            g_work_state = em_work_sniffer;
+            g_work_state = em_work_launcher;
             g_config_path = REG_SNIFFER_CONFIG_PATH;
             state = TRUE;
         }
@@ -99,6 +100,7 @@ static BOOL _AnalysisCmd()
             else if (vm == "-user")
             {
                 g_work_state = em_work_user;
+                gsParentPid = _wtoi(args[2]);
                 state = TRUE;
             }
         }
@@ -257,13 +259,17 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
                 #ifndef _DEBUG
                 WCHAR wszSelf[MAX_PATH] = {0};
                 GetModuleFileNameW(NULL, wszSelf, MAX_PATH);
+                dp(L"test1");
                 if (_InstallSnifferServ())
                 {
                     DWORD dwSession = 1;
                     ProcessIdToSessionId(GetCurrentProcessId(), &dwSession);
                     RunInUser(wszSelf, L"-sv", dwSession);
                     break;
+                } else {
+                    dp(L"test2");
                 }
+
                 if (wszSelf[0])
                 {
                     WindowsFirewallAddAppW(wszSelf, PathFindFileNameW(wszSelf));
@@ -287,7 +293,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
         else if (em_work_user == g_work_state)
         {
             CreateEventA(NULL, FALSE, FALSE, EVENT_USER_PROC);
-            CUserTaskMgr::GetInst()->StartService();
+            CUserTaskMgr::GetInst()->StartService(gsParentPid);
         }
     } while ( FALSE);
     WSACleanup();

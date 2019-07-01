@@ -191,4 +191,9 @@ mstring RegGetStrValueA(HKEY hKey, const mstring &subPath, const mstring &valNam
 ustring RegGetStrValueW(HKEY hKey, const ustring &subPath, const ustring &valName);
 //高权限进程启动当前用户权限进程
 HANDLE CreateProcWithCurrentUser(const mstring &command, bool show);
+
+mstring GetStdErrorStr(DWORD dwErr = GetLastError());
+
+HANDLE ExecProcessW(LPCWSTR cmdLine, DWORD* procId, BOOL bShowWindow);
+HANDLE ExecProcessA(LPCSTR cmdLine, DWORD* procId, BOOL bShowWindow);
 #endif

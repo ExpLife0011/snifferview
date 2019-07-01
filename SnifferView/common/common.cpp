@@ -1808,16 +1808,17 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         if (GetTokenInformation(hPToken, (TOKEN_INFORMATION_CLASS)TokenLinkedToken, &admin, sizeof(TOKEN_LINKED_TOKEN), &ret))
         {
             hUserTokenDup = admin.LinkedToken;
-        } else {
+        } else
+        {
             int err = GetLastError();
 
             TOKEN_PRIVILEGES tp;
             LUID luid;
-            if (LookupPrivilegeValue(NULL,SE_DEBUG_NAME,&luid))
+            if (LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid))
             {
                 tp.PrivilegeCount =1;
                 tp.Privileges[0].Luid =luid;
-                tp.Privileges[0].Attributes =SE_PRIVILEGE_ENABLED;
+                tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
             }
             //¸´ÖÆtoken
             DuplicateTokenEx(hPToken, MAXIMUM_ALLOWED, NULL, SecurityIdentification,TokenPrimary, &hUserTokenDup);
@@ -1852,7 +1853,7 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         if (CreateProcessAsUserA(
             hUserTokenDup,
             NULL,
-            (LPSTR) command.c_str(),
+            (LPSTR)command.c_str(),
             NULL,
             NULL,
             FALSE,
@@ -1878,4 +1879,65 @@ HANDLE CreateProcWithCurrentUser(const mstring &command, bool show) {
         CloseHandle(hUserTokenDup);
     }
     return hProcess;
+}
+
+mstring GetStdErrorStr(DWORD dwErr)
+{
+    LPVOID lpMsgBuf = NULL;
+    FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |  
+        FORMAT_MESSAGE_FROM_SYSTEM |  
+        FORMAT_MESSAGE_IGNORE_INSERTS, 
+        NULL,
+        dwErr,
+        MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT), //Default language  
+        (LPSTR)&lpMsgBuf,  
+        0,  
+        NULL  
+        ); 
+    mstring strMsg((LPCSTR)lpMsgBuf);
+    if (lpMsgBuf)
+    {
+        LocalFlags(lpMsgBuf);
+    }
+    return strMsg;
+}
+
+HANDLE ExecProcessW(LPCWSTR cmdLine, DWORD* procId, BOOL bShowWindow)
+{
+    if (!cmdLine)
+    {
+        return NULL;
+    }
+
+    STARTUPINFOW si = {sizeof(si)};
+    if (!bShowWindow)
+    {
+        si.wShowWindow = SW_HIDE;
+        si.dwFlags = STARTF_USESHOWWINDOW;
+    }
+
+    PROCESS_INFORMATION pi;
+
+    LPWSTR wszCmdLine = (LPWSTR)malloc((MAX_PATH + lstrlenW(cmdLine)) * sizeof(WCHAR));
+    lstrcpyW(wszCmdLine, cmdLine);
+    if (CreateProcessW(NULL, wszCmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+    {
+        CloseHandle(pi.hThread);
+
+        if (procId)
+        {
+            *procId = pi.dwProcessId;
+        }
+
+        free((void*)wszCmdLine);
+        return pi.hProcess;
+    }
+
+    free((void*)wszCmdLine);
+    return NULL;
+}
+
+HANDLE ExecProcessA(LPCSTR cmdLine, DWORD* procId, BOOL bShowWindow) {
+    return ExecProcessW(AtoW(cmdLine).c_str(), procId, bShowWindow);
 }

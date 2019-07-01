@@ -880,16 +880,18 @@ static void _StartUserProc() {
 
     char sniffPath[512];
     GetModuleFileNameA(NULL, sniffPath, sizeof(sniffPath));
+    mstring command = FormatA("\"%hs\" -user %d", sniffPath, GetCurrentProcessId());
 
+    HANDLE hProcess = NULL;
 #ifdef _DEBUG
-    //调试方便，复制副本并启动
-    mstring src = sniffPath;
-    PathAppendA(sniffPath, "..\\SniffUser.exe");
-    CopyFileA(src.c_str(), sniffPath, TRUE);
+    hProcess = ExecProcessA(command.c_str(), NULL, TRUE);
+#else
+    hProcess = CreateProcWithCurrentUser(command.c_str(), true);
 #endif
-
-    mstring command = FormatA("\"%hs\" -user", sniffPath);
-    CreateProcWithCurrentUser(command, true);
+    if (hProcess)
+    {
+        CloseHandle(hProcess);
+    }
 }
 
 VOID OnInitDialog(HWND hdlg)

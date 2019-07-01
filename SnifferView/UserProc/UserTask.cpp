@@ -7,7 +7,7 @@
 #include "../common/common.h"
 #include "../common/StrUtil.h"
 
-#define EVENT_TASK_NOTIFY   "Global\\1a2c1501-6707-47be-a509-9e13ddab9e15\\TaskNotify"
+#define EVENT_TASK_NOTIFY   "Global\\1a2c1501-6707-47be-a509-9e13ddab9e15_TaskNotify"
 #define PATH_TASK_CACHE     "software\\snifferview\\UserTask"
 #define PATH_TASK_RESULT    "software\\snifferview\\TaskResult"
 
@@ -107,14 +107,34 @@ void CUserTaskMgr::OnTask() const {
     RegCloseKey(hKey);
 }
 
-void CUserTaskMgr::StartService() {
+void CUserTaskMgr::StartService(DWORD parentPid) {
+    mParentPid = parentPid;
     mTaskNotify = CreateEventA(NULL, FALSE, FALSE, EVENT_TASK_NOTIFY);
+    HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, mParentPid);
 
-    while (true) {
-        WaitForSingleObject(mTaskNotify, INFINITE);
-
-        OnTask();
+    if (!mTaskNotify || !process)
+    {
+        return;
     }
+
+    HANDLE arry[] = {mTaskNotify, process};
+    while (true) {
+        DWORD ret = WaitForMultipleObjects(2, arry, FALSE, INFINITE);
+
+        if (WAIT_OBJECT_0 == ret)
+        {
+            OnTask();
+        } else if ((WAIT_OBJECT_0 + 1) == ret)
+        {
+            break;
+        } else {
+            break;
+        }
+    }
+
+    CloseHandle(mTaskNotify);
+    CloseHandle(process);
+    mTaskNotify = NULL, process = NULL;
 }
 
 mstring CUserTaskMgr::SendTask(const mstring &task, const mstring &param) const {
@@ -153,8 +173,21 @@ mstring CUserTaskMgr::SendTask(const mstring &task, const mstring &param) const 
 }
 
 CUserTaskMgr::CUserTaskMgr() {
-    mTaskThread = NULL, mTaskNotify = NULL;
+    mTaskThread = NULL;
+    mTaskNotify = NULL;
+    mParentPid = 0;
+    mExitService = false;
 }
 
 CUserTaskMgr::~CUserTaskMgr() {
+}
+
+DWORD CUserTaskMgr::ParentCheckThread(LPVOID param) {
+    CUserTaskMgr *pThis = (CUserTaskMgr *)param;
+    HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pThis->mParentPid);
+
+    WaitForSingleObject(process, INFINITE);
+    pThis->mExitService = true;
+    SetEvent(pThis->mTaskNotify);
+    return 0;
 }
