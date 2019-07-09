@@ -76,9 +76,9 @@ public:
     bool SetAutoScroll(bool flag);
     //Sel Jump To Next Str
     bool JmpNextPos(const std::mstring &str);
-    bool JmpFrontPos(const std::mstring &str);
-    bool JmpFirstPos(const std::mstring &str);
     bool JmpLastPos(const std::mstring &str);
+    bool JmpFirstPos(const std::mstring &str);
+    bool JmpEndPos(const std::mstring &str);
 
     //Set Keyword For HighLight
     bool AddHighLight(const std::mstring &keyWord, DWORD colour);
@@ -99,6 +99,8 @@ public:
     unsigned int GetCaretColour();
     int SetScrollEndLine();
 private:
+    //定位指定范围,选中并置于屏幕中央
+    bool SetSelByRange(size_t startPos, size_t endPos) const;
     void OnViewUpdate() const;
     INT_PTR OnNotify(HWND hdlg, WPARAM wp, LPARAM lp);
     static LRESULT CALLBACK WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);

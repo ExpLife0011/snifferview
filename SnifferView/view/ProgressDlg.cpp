@@ -36,7 +36,6 @@ INT_PTR CProgressDlg::OnInitDlg(WPARAM wp, LPARAM lp) {
     mStatusEdit = GetDlgItem(mHwnd, IDC_PROGRESS_CONTENT);
     SetTimer(mHwnd, TIMER_PROGRESS_UPDATE, 30, NULL);
     CenterWindow(mParent, mHwnd);
-
     return 0;
 }
 

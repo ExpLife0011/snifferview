@@ -521,6 +521,31 @@ size_t mstring::find_in_rangei(const mstring &str, size_t offset, size_t range) 
     return sfind(str, offset, range, true);
 }
 
+size_t mstring::rfind_in_rangei(const mstring &str, size_t offset, size_t range) const {
+    if (empty() || str.empty())
+    {
+        return mstring::npos;
+    }
+
+    if (-1 == offset)
+    {
+        offset = size() - 1;
+    }
+
+    int i = offset;
+    size_t count = 0;
+    while ((i >= 0) && (count < range)) {
+        if (0 == comparei(str, i))
+        {
+            return i;
+        }
+
+        i--;
+        count++;
+    }
+    return mstring::npos;
+}
+
 //比较字符串（忽略大小小写）
 int mstring::comparei(const char *str, size_t offset) const
 {

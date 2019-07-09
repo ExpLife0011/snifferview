@@ -48,13 +48,16 @@ BOOL CPacketCacheMgr::PacketAttrInit(IN OUT PacketContent &msg) {
     if (GetInst()->mAttrSet.end() == (it = GetInst()->mAttrSet.find(msg.m_packet_mark)))
     {
         PacketAttr attr;
+        attr.mUnique = msg.m_packet_mark;
         attr.mStartIndex = CFileCache::GetInst()->GetPacketCount();
         attr.mEndIndex = attr.mStartIndex + 1;
         GetInst()->InitColour(msg);
         attr.mColour = msg.m_colour;
+        GetInst()->mAttrSet.insert(make_pair(msg.m_packet_mark, attr));
         GetInst()->mUniqueCount++;
     } else {
         it->second.mEndIndex = CFileCache::GetInst()->GetPacketCount() + 1;
+        msg.m_colour = it->second.mColour;
     }
     return TRUE;
 }

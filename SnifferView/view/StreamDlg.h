@@ -6,6 +6,7 @@
 #include "../analysis.h"
 #include "../SyntaxHlpr/SyntaxTextView.h"
 #include "StreamView.h"
+#include "../PacketCache.h"
 
 class CStreamDlg {
 public:
@@ -21,17 +22,21 @@ private:
     void OnInitDlg(WPARAM wp, LPARAM lp);
     void OnCommand(WPARAM wp, LPARAM lp);
     void OnClose(WPARAM wp, LPARAM lp);
+    INT_PTR OnFindStr(WPARAM wp, LPARAM lp);
     void OnMessage(UINT msg, WPARAM wp, LPARAM lp);
     static INT_PTR CALLBACK DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp);
+    static bool PacketEnumHandler(size_t index, const PacketContent *info, void *param);
+    static LRESULT CALLBACK EditCtrlProc(HWND, UINT, WPARAM, LPARAM);
 
 private:
     void PrintHex(const mstring &desc, const mstring &content);
-    void AddData(const mstring &desc, const mstring &data);
     void GetPacketSet();
     void LoadPacketSet(int type);
 
 private:
-    list<PacketContent *> mPacketSet;
+    std::mstring mLastStr;
+    std::list<PacketContent *> mPacketSet;
+    PacketAttr mAttr;   //封包属性
     mstring mUnique1;   //正向标识
     mstring mUnique2;   //反向标识
 
@@ -44,6 +49,8 @@ private:
     HWND mShowSelect;
     CStreamView mShowView;
     static std::map<HWND, CStreamDlg *> msPtrMap;
+    static std::map<HWND, CStreamDlg *> msEditMap;
+    PWIN_PROC mOldEditProc;
 };
 
 void ShowStreamView(HWND hParent, int curPos);

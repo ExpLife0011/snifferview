@@ -43,7 +43,7 @@ BOOL WINAPI SetCtlsCoord(HWND hdlg, PCTL_PARAMS arry, DWORD count);
 //max_wide:窗体的最大宽度
 //max_hight:窗体的最大高度
 //return:TRUE 成功 FALSE 失败
-BOOL WINAPI SetWindowRange(HWND hwnd, DWORD min_wide, DWORD min_hight, DWORD max_wide, DWORD max_hight);
+BOOL WINAPI SetWindowRange(HWND hwnd, DWORD min_wide, DWORD min_hight, DWORD max_wide = 0, DWORD max_hight = 0);
 
 //设置Listctrl列自动化调整
 BOOL WINAPI SetListColumnAutoSet(HWND hListCtrl);

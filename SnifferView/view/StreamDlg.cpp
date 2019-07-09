@@ -9,6 +9,8 @@
 
 using namespace std;
 
+#define MSG_ON_FIND_ENTER       (WM_USER + 1051)
+
 enum StreamShowType {
     em_stream_utf8 = 0,
     em_stream_gbk,
@@ -17,6 +19,7 @@ enum StreamShowType {
 };
 
 map<HWND, CStreamDlg *> CStreamDlg::msPtrMap;
+map<HWND, CStreamDlg *> CStreamDlg::msEditMap;
 
 CStreamDlg::CStreamDlg(int pos) {
     mCurPos = pos;
@@ -29,6 +32,7 @@ CStreamDlg::~CStreamDlg() {
 
 bool CStreamDlg::Create(HWND parent) {
     mParent = parent;
+    mOldEditProc = NULL;
     CreateDialogParamA(g_m, MAKEINTRESOURCEA(IDD_STREAM), parent, DlgProc, (LPARAM)this);
     return true;
 }
@@ -40,6 +44,24 @@ bool CStreamDlg::DoModule(HWND parent) {
 }
 
 void CStreamDlg::InitSyntaxTextView() {
+}
+
+LRESULT CStreamDlg::EditCtrlProc(HWND hEdit, UINT msg, WPARAM wp, LPARAM lp) {
+    map<HWND, CStreamDlg *>::const_iterator it = msEditMap.find(hEdit);
+    if (msEditMap.end() == it)
+    {
+        return 0;
+    }
+
+    CStreamDlg *ptr = it->second;
+    if (WM_KEYDOWN == msg)
+    {
+        if (0x0d == wp)
+        {
+            SendMessageA(ptr->mhWnd, MSG_ON_FIND_ENTER, 0, 0);
+        }
+    }
+    return CallWindowProc(ptr->mOldEditProc, hEdit, msg, wp, lp);
 }
 
 /*Window Message*/
@@ -71,9 +93,12 @@ void CStreamDlg::OnInitDlg(WPARAM wp, LPARAM lp) {
     CTL_PARAMS arry[] = {
         {0, mFind, 0, 0, 1, 0},
         {0, mShowSelect, 1, 0, 0, 0},
+        {IDC_STREAM_BTN_NEXT, 0, 1, 0, 0, 0},
+        {IDC_STREAM_BTN_LAST, 0, 1, 0, 0, 0},
         {0, hShowView, 0, 0, 1, 1}
     };
     SetCtlsCoord(mhWnd, arry, RTL_NUMBER_OF(arry));
+    SetWindowRange(mhWnd, 640, 480);
 
     int cw = GetSystemMetrics(SM_CXSCREEN);
     int ch = GetSystemMetrics(SM_CYSCREEN);
@@ -84,7 +109,10 @@ void CStreamDlg::OnInitDlg(WPARAM wp, LPARAM lp) {
 
     RECT wndRect = {0};
     GetWindowRect(mhWnd, &wndRect);
-    //SetWindowRange(mhWnd, wndRect.right - wndRect.left, wndRect.bottom - wndRect.top, 0, 0);
+    SendMessageA(mhWnd, WM_COMMAND, IDC_STREAM_SELECT, 0);
+
+    msEditMap[mFind] = this;
+    mOldEditProc = (PWIN_PROC)SetWindowLong(mFind, GWL_WNDPROC, (long)EditCtrlProc);
 }
 
 void CStreamDlg::OnCommand(WPARAM wp, LPARAM lp) {
@@ -103,25 +131,93 @@ void CStreamDlg::OnCommand(WPARAM wp, LPARAM lp) {
             case em_stream_utf8:
             case em_stream_unicode:
                 {
-                    //mShowView.ClearView();
-                    //LoadPacketSet(curSel);
+                    mShowView.ClearView();
+                    LoadPacketSet(curSel);
                 }
                 break;
             case em_stream_hex:
                 {
-                    //mShowView.ClearView();
-                    //LoadPacketSet(curSel);
+                    mShowView.ClearView();
+                    LoadPacketSet(curSel);
                 }
                 break;
         }
+    } else if (id == IDC_STREAM_BTN_NEXT)
+    {
+        mstring str = GetWindowStrA(mFind);
+        str.trim();
+
+        if (str.empty())
+        {
+            return;
+        }
+        mShowView.JmpNextPos(str);
+    } else if (id == IDC_STREAM_BTN_LAST)
+    {
+        mstring str = GetWindowStrA(mFind);
+        str.trim();
+
+        if (str.empty())
+        {
+            return;
+        }
+        mShowView.JmpLastPos(str);
     }
 }
 
 void CStreamDlg::OnClose(WPARAM wp, LPARAM lp) {
-
+    for (list<PacketContent *>::const_iterator it = mPacketSet.begin() ; it != mPacketSet.end() ; it++)
+    {
+        delete *it;
+    }
+    mPacketSet.clear();
+    msEditMap.erase(mFind);
 }
 
 void CStreamDlg::OnMessage(UINT msg, WPARAM wp, LPARAM lp) {
+}
+
+bool CStreamDlg::PacketEnumHandler(size_t index, const PacketContent *info, void *param) {
+    CStreamDlg *pThis = (CStreamDlg *)param;
+
+    if (index >= pThis->mAttr.mEndIndex)
+    {
+        return false;
+    }
+
+    if (info->m_packet_mark != pThis->mAttr.mUnique)
+    {
+        return true;
+    }
+
+    PacketContent *ss = new PacketContent;
+    *ss = *info;
+    pThis->mPacketSet.push_back(ss);
+
+    if (pThis->mUnique2.empty() && info->m_dec_mark != pThis->mUnique1)
+    {
+        pThis->mUnique2 = info->m_dec_mark;
+    }
+    return true;
+}
+
+INT_PTR CStreamDlg::OnFindStr(WPARAM wp, LPARAM lp) {
+    mstring str = GetWindowStrA(mFind);
+    str.trim();
+
+    if (mLastStr != str)
+    {
+        mLastStr = str;
+        mShowView.ClearHighLight();
+        mShowView.AddHighLight(mLastStr, RGB(0, 0xff, 0));
+    }
+
+    if (str.empty())
+    {
+        return 0;
+    }
+    mShowView.JmpNextPos(str);
+    return 0;
 }
 
 INT_PTR CStreamDlg::DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -149,6 +245,11 @@ INT_PTR CStreamDlg::DlgProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
             ptr->OnCommand(wp, lp);
         }
         break;
+    case MSG_ON_FIND_ENTER:
+        {
+            ptr->OnFindStr(wp, lp);
+        }
+        break;
     case  WM_CLOSE:
         {
             ptr->OnClose(wp, lp);
@@ -174,51 +275,8 @@ void CStreamDlg::GetPacketSet() {
     mstring unique = content.m_packet_mark;
     mUnique1 = content.m_dec_mark;
 
-    for (size_t i = 0 ; i < CFileCache::GetInst()->GetPacketCount() ; i++)
-    {
-        PacketContent tmp;
-        CFileCache::GetInst()->GetPacket(i, tmp);
-        if (tmp.m_packet_mark != unique)
-        {
-            continue;
-        }
-
-        PacketContent *ss = new PacketContent;
-        *ss = tmp;
-        mPacketSet.push_back(ss);
-
-        if (mUnique2.empty() && tmp.m_dec_mark != mUnique1)
-        {
-            mUnique2 = tmp.m_dec_mark;
-        }
-    }
-}
-
-void CStreamDlg::AddData(const mstring &desc, const mstring &data) {
-    size_t lastPos = 0;
-    for (size_t i = 0 ; i < data.size() ; i++)
-    {
-        mstring lineStr;
-        if (i - lastPos >= (size_t)mLineMax)
-        {
-            lineStr = data.substr(lastPos, i - lastPos);
-            mShowView.AppendText(desc, lineStr);
-            mShowView.AppendText(desc, "\n");
-            lastPos = i;
-            continue;
-        }
-
-        char c = data[i];
-        if (c == '\n')
-        {
-            if (i >= lastPos)
-            {
-                lineStr = data.substr(lastPos, i - lastPos + 1);
-                mShowView.AppendText(desc, lineStr);
-                lastPos = i + 1;
-            }
-        }
-    }
+    CPacketCacheMgr::GetInst()->GetPacketAttr(unique, mAttr);
+    CFileCache::GetInst()->EnumPacket(PacketEnumHandler, this);
 }
 
 void CStreamDlg::PrintHex(const mstring &desc, const mstring &content) {
@@ -254,12 +312,12 @@ void CStreamDlg::PrintHex(const mstring &desc, const mstring &content) {
         showData += GetPrintStr(curLine.c_str(), curLine.size(), false);
         showData += "\n";
     }
-    mShowView.AppendText(desc, showData);
-    mShowView.AppendText(desc, "\n");
+    mShowView.PushToCache(desc, showData);
+    mShowView.PushToCache(desc, "\n");
 }
 
 void CStreamDlg::LoadPacketSet(int type) {
-    mstring lastUnique;
+    bool first = true;
     for (list<PPacketContent>::const_iterator it = mPacketSet.begin() ; it != mPacketSet.end() ; it++)
     {
         PacketContent *ptr = *it;
@@ -281,6 +339,11 @@ void CStreamDlg::LoadPacketSet(int type) {
         }
 
         mstring showData = ptr->m_packet.substr(offset, ptr->m_packet.size() - offset);
+        if (showData.empty())
+        {
+            continue;
+        }
+
         if (type == em_stream_hex)
         {
             PrintHex(desc, showData);
@@ -293,16 +356,14 @@ void CStreamDlg::LoadPacketSet(int type) {
                 showData = WtoA(wstring((LPCWSTR)showData.c_str(), showData.size() / 2));
             }
 
-            if (lastUnique.empty())
+            if (first)
             {
-                lastUnique = ptr->m_dec_mark;
-            } else if (lastUnique != ptr->m_dec_mark) {
-                lastUnique = ptr->m_dec_mark;
-                mShowView.AppendText(desc, "\n");
+                first = false;
+            } else {
+                mShowView.PushToCache(desc, "\n");
             }
-
             mstring show1 = GetPrintStr(showData.c_str(), showData.size());
-            AddData(desc, show1);
+            mShowView.PushToCache(desc, show1);
         }
     }
 }

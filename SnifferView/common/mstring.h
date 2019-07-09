@@ -127,6 +127,7 @@ namespace std
         //忽略大小写查找
         size_t find_in_rangei(const char *str, size_t offset = 0, size_t range = -1) const;
         size_t find_in_rangei(const mstring &str, size_t offset = 0, size_t range = -1) const;
+        size_t rfind_in_rangei(const mstring &str, size_t offset = -1, size_t range = -1) const;
 
         //比较字符串（忽略大小小写）
         int comparei(const char *str, size_t offset = 0) const;

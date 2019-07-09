@@ -33,9 +33,12 @@
 #define IDC_BTN_HELP                    1005
 #define IDC_BTN_PE                      1005
 #define IDC_NETSTAT_BTN_SEARCH          1005
+#define IDC_STREAM_BTN_NEXT             1005
 #define IDC_RADIO1                      1006
 #define IDC_RDO_H                       1006
 #define IDC_BTN_END                     1006
+#define IDC_BUTTON2                     1006
+#define IDC_STREAM_BTN_LAST             1006
 #define IDC_RADIO2                      1007
 #define IDC_RDO_N                       1007
 #define IDC_BTN_APPEND                  1007

@@ -109,6 +109,7 @@ LRESULT SyntaxTextView::WndSubProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     PWIN_PROC pfnOldProc = ptr->mParentProc;
     switch (msg) {
         case WM_NOTIFY:
+            ptr->OnNotify(hwnd, wp, lp);
             break;
         case WM_DESTROY:
             {
@@ -394,6 +395,21 @@ mstring SyntaxTextView::GetText() const {
     return ptr;
 }
 
+bool SyntaxTextView::SetSelByRange(size_t startPos, size_t endPos) const {
+    size_t line = SendMsg(SCI_LINEFROMPOSITION, startPos, 0);
+    SendMsg(SCI_SETSEL, startPos, endPos);
+
+    //SendMsg(SCI_SCROLLRANGE, startPos, endPos);
+    //将当前选中内容置于屏幕正中央
+    int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
+    int lineCount = SendMsg(SCI_LINESONSCREEN, 0, 0);
+    int curLine = SendMsg(SCI_LINEFROMPOSITION, startPos, 0);
+
+    int mid = firstLine + (lineCount / 2);
+    SendMsg(SCI_LINESCROLL, 0, curLine - mid);
+    return true;
+}
+
 //从当前选中的位置开始向后查找.如果没有,从当前可见页开始查找
 bool SyntaxTextView::JmpNextPos(const mstring &str) {
     int pos1 = SendMsg(SCI_GETSELECTIONSTART, 0, 0);
@@ -414,28 +430,48 @@ bool SyntaxTextView::JmpNextPos(const mstring &str) {
         return false;
     }
 
-    size_t line = SendMsg(SCI_LINEFROMPOSITION, pos3, 0);
-    SendMsg(SCI_SETSEL, pos3, pos3 + str.size());
-
-    //将当前选中内容置于屏幕正中央
-    int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
-    int lineCount = SendMsg(SCI_LINESONSCREEN, 0, 0);
-    int curLine = SendMsg(SCI_LINEFROMPOSITION, pos3, 0);
-
-    int mid = firstLine + (lineCount / 2);
-    SendMsg(SCI_LINESCROLL, 0, curLine - mid);
-    return true;
+    return SetSelByRange(pos3, pos3 + str.size());
 }
 
-bool SyntaxTextView::JmpFrontPos(const mstring &str) {
-    return false;
+bool SyntaxTextView::JmpLastPos(const mstring &str) {
+    /*
+    查找算法：
+    1.先从当前选择的起始位置开始往前查
+    2.如果没有任何选中数据，从当前展示页最后一个字符向前查
+    */
+    int pos1 = SendMsg(SCI_GETSELECTIONSTART, 0, 0);
+    int pos2 = SendMsg(SCI_GETSELECTIONEND, 0, 0);
+
+    size_t startPos = 0;
+    if (pos2 > pos1)
+    {
+        if (pos1 > 1)
+        {
+            startPos = pos1 - 1;
+        } else {
+            startPos = pos1;
+        }
+    } else {
+        int firstLine = SendMsg(SCI_GETFIRSTVISIBLELINE, 0, 0);
+        int lineCount = SendMsg(SCI_LINESONSCREEN, 0, 0);
+
+        startPos = SendMsg(SCI_GETLINEENDPOSITION, firstLine + lineCount, 0);
+    }
+
+    size_t pos3 = mStrInView.rfind_in_rangei(str, startPos);
+    if (mstring::npos == pos3)
+    {
+        return false;
+    }
+
+    return SetSelByRange(pos3, pos3 + str.size());
 }
 
 bool SyntaxTextView::JmpFirstPos(const mstring &str) {
     return JmpNextPos(str);
 }
 
-bool SyntaxTextView::JmpLastPos(const mstring &str) {
+bool SyntaxTextView::JmpEndPos(const mstring &str) {
     if (str.empty() || mStrInView.empty())
     {
         return false;
