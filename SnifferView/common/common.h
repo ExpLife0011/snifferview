@@ -196,4 +196,6 @@ mstring GetStdErrorStr(DWORD dwErr = GetLastError());
 
 HANDLE ExecProcessW(LPCWSTR cmdLine, DWORD* procId, BOOL bShowWindow);
 HANDLE ExecProcessA(LPCSTR cmdLine, DWORD* procId, BOOL bShowWindow);
+
+BOOL GenerateLowSD(SECURITY_DESCRIPTOR* pSecDesc, PACL* pDacl);
 #endif

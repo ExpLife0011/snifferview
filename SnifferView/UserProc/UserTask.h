@@ -9,6 +9,7 @@
 class CUserTaskMgr {
 public:
     static CUserTaskMgr *GetInst();
+    void ClearCache() const;
     void StartService(DWORD parent);
     std::mstring SendTask(const std::mstring &task, const std::mstring &param) const;
 
@@ -21,6 +22,7 @@ private:
     static UINT_PTR CALLBACK OFNHookProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp);
     static DWORD __stdcall ParentCheckThread(LPVOID param);
 
+    HKEY CreateLowSecurityKey(HKEY hkey, const std::mstring &subKey) const;
     std::mstring ShowOpenFileDlg(const std::mstring &defDlg) const;
     std::mstring ShowSaveFileDlg(const std::mstring &defName, const std::mstring &defDlg) const;
 

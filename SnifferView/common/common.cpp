@@ -1943,3 +1943,59 @@ HANDLE ExecProcessW(LPCWSTR cmdLine, DWORD* procId, BOOL bShowWindow)
 HANDLE ExecProcessA(LPCSTR cmdLine, DWORD* procId, BOOL bShowWindow) {
     return ExecProcessW(AtoW(cmdLine).c_str(), procId, bShowWindow);
 }
+
+// 需要调用方提供 PACL* 并在调用完此函数后自行释放内存
+BOOL GenerateLowSD(SECURITY_DESCRIPTOR* pSecDesc, PACL* pDacl)
+{
+    PSID pSidWorld = NULL;
+    EXPLICIT_ACCESS ea;
+    SID_IDENTIFIER_AUTHORITY sia = SECURITY_WORLD_SID_AUTHORITY;
+    BOOL bRet = FALSE;
+
+    do
+    {
+        if (!pSecDesc || !pDacl)
+        {
+            break;
+        }
+
+        if (AllocateAndInitializeSid(&sia, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pSidWorld) == 0)
+        {
+            break;
+        }
+
+        ea.grfAccessMode = GRANT_ACCESS;
+        ea.grfAccessPermissions = FILE_ALL_ACCESS ;
+        ea.grfInheritance = OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE;
+        ea.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+        ea.Trustee.pMultipleTrustee = NULL;
+        ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea.Trustee.ptstrName = (LPTSTR)pSidWorld;
+
+        if (SetEntriesInAcl(1, &ea, NULL, pDacl) != ERROR_SUCCESS)
+        {
+            break;
+        }
+
+        if (InitializeSecurityDescriptor(pSecDesc, SECURITY_DESCRIPTOR_REVISION) == 0)
+        {
+            break;
+        }
+
+        if (SetSecurityDescriptorDacl(pSecDesc, TRUE, *pDacl, FALSE) == 0)
+        {
+            break;
+        }
+
+        bRet = TRUE;
+    } while (FALSE);
+
+    if (NULL != pSidWorld)
+    {
+        FreeSid(pSidWorld);
+        pSidWorld = NULL;
+    }
+
+    return bRet;
+}

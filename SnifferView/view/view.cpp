@@ -956,6 +956,7 @@ VOID OnInitDialog(HWND hdlg)
         _InitSnifWatcher();
         SetWindowTextA(hdlg, SNIFFER_STATE_NAME);
         //启动当前用户态进程
+        CUserTaskMgr::GetInst()->ClearCache();
         _StartUserProc();
     }
     else if(g_work_state == em_work_analysis)

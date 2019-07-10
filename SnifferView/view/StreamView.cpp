@@ -34,7 +34,7 @@ void CStreamView::InitStreamView(HWND hParent, int x, int y, int cx, int cy) {
     RegisterParser(LABEL_TCP_PIPE2, TcpPipe2Parser, this);
 
     //×Ô¶¯»»ÐÐ
-    SendMsg(SCI_SETWRAPMODE, 1, 1);
+    //SendMsg(SCI_SETWRAPMODE, 1, 1);
 }
 
 LRESULT CStreamView::MyKeyboardProc(int code, WPARAM wp, LPARAM lp) {

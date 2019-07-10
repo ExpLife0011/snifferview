@@ -161,12 +161,17 @@ void CUserTaskMgr::OnTask() const {
     RegCloseKey(hKey);
 }
 
+void CUserTaskMgr::ClearCache() const {
+    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_CACHE);
+    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT);
+}
+
 void CUserTaskMgr::StartService(DWORD parentPid) {
     mParentPid = parentPid;
     mTaskNotify = CreateEventA(NULL, FALSE, FALSE, EVENT_TASK_NOTIFY);
     HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, mParentPid);
-    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_CACHE);
-    SHDeleteKeyA(HKEY_LOCAL_MACHINE, PATH_TASK_RESULT);
+    dp(L"delte cache");
+    ClearCache();
 
     if (!mTaskNotify || !process)
     {
@@ -193,6 +198,35 @@ void CUserTaskMgr::StartService(DWORD parentPid) {
     mTaskNotify = NULL, process = NULL;
 }
 
+HKEY CUserTaskMgr::CreateLowSecurityKey(HKEY hkey, const mstring &subKey) const {
+    SECURITY_DESCRIPTOR secDesc;
+    PACL pDacl = NULL;
+
+    // 注意此处的 pDacl 需要调用方释放
+    if (!GenerateLowSD(&secDesc, &pDacl))
+    {
+        if (pDacl)
+        {
+            LocalFree(pDacl);
+        }
+        return FALSE;
+    }
+
+    HKEY hResult = NULL;
+    RegCreateKeyExA(hkey, subKey.c_str(), 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &hResult, NULL);
+
+    if (hResult)
+    {
+        RegSetKeySecurity(hResult, DACL_SECURITY_INFORMATION, &secDesc);
+    }
+
+    if (pDacl)
+    {
+        LocalFree(pDacl);
+    }
+    return hResult;
+}
+
 mstring CUserTaskMgr::SendTask(const mstring &task, const mstring &param) const {
     HANDLE notify = OpenEventA(EVENT_MODIFY_STATE, FALSE, EVENT_TASK_NOTIFY);
 
@@ -215,9 +249,12 @@ mstring CUserTaskMgr::SendTask(const mstring &task, const mstring &param) const 
     HANDLE complete = CreateLowsdEvent(FALSE, FALSE, AtoW(nameNotify).c_str());
 
     mstring path = FormatA("%hs\\%hs", PATH_TASK_CACHE, magic.c_str());
-    SHSetValueA(HKEY_LOCAL_MACHINE, path.c_str(), "taskType", REG_SZ, task.c_str(), task.size());
-    SHSetValueA(HKEY_LOCAL_MACHINE, path.c_str(), "taskParam", REG_SZ, param.c_str(), param.size());
-    SHSetValueA(HKEY_LOCAL_MACHINE, path.c_str(), "taskNotify", REG_SZ, nameNotify.c_str(), nameNotify.size());
+    HKEY subKey = CreateLowSecurityKey(HKEY_LOCAL_MACHINE, path);
+    SHSetValueA(subKey, "", "taskType", REG_SZ, task.c_str(), task.size());
+    SHSetValueA(subKey, "", "taskParam", REG_SZ, param.c_str(), param.size());
+    SHSetValueA(subKey, "", "taskNotify", REG_SZ, nameNotify.c_str(), nameNotify.size());
+
+    RegCloseKey(subKey);
     SetEvent(notify);
     CloseHandle(notify);
 
