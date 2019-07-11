@@ -20,7 +20,7 @@ strutf8 ToUtf8W(const wstring &str)
 {
     strutf8 ret;
 
-    int count = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, NULL, 0, NULL, NULL);
+    int count = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.size() + 1, NULL, 0, NULL, NULL);
 
     if (count > 0)
     {
@@ -28,8 +28,8 @@ strutf8 ToUtf8W(const wstring &str)
 
         if (buffer != 0)
         {
-            WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, buffer, count, NULL, NULL);
-            ret = buffer;
+            WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.size() + 1, buffer, count, NULL, NULL);
+            ret.append(buffer, count - 1);
 
             delete []buffer;
         }
@@ -47,7 +47,7 @@ wstring ToCommonW(const strutf8 &str)
 {
     wstring ret;
 
-    int count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    int count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size() + 1, NULL, 0);
 
     if (count > 0)
     {
@@ -55,8 +55,8 @@ wstring ToCommonW(const strutf8 &str)
 
         if (buffer != 0)
         {
-            MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer, count);
-            ret = buffer;
+            MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size() + 1, buffer, count);
+            ret.append(buffer, count - 1);
 
             delete []buffer;
         }
@@ -69,7 +69,7 @@ string ToMultiByte(const wstring &str)
 {
     string ret;
 
-    int count = WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, NULL, 0, NULL, NULL);
+    int count = WideCharToMultiByte(CP_ACP, 0, str.c_str(), str.size() + 1, NULL, 0, NULL, NULL);
 
     if (count > 0)
     {
@@ -77,8 +77,8 @@ string ToMultiByte(const wstring &str)
 
         if (buffer != 0)
         {
-            WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, buffer, count, NULL, NULL);
-            ret = buffer;
+            WideCharToMultiByte(CP_ACP, 0, str.c_str(), str.size() + 1, buffer, count, NULL, NULL);
+            ret.append(buffer, count - 1);
 
             delete []buffer;
         }
@@ -91,7 +91,7 @@ wstring ToWideChar(const string &str)
 {
     wstring ret;
 
-    int count = MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, NULL, 0);
+    int count = MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size() + 1, NULL, 0);
 
     if (count > 0)
     {
@@ -99,8 +99,8 @@ wstring ToWideChar(const string &str)
 
         if (buffer != 0)
         {
-            MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, count);
-            ret = buffer;
+            MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size() + 1, buffer, count);
+            ret.append(buffer, count - 1);
 
             delete []buffer;
         }
