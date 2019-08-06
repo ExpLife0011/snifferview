@@ -974,7 +974,7 @@ BOOL GetFileString(IN const char *path, IN const char *attr, OUT mstring &msg)
     //获取版本信息大小
     size = GetFileVersionInfoSizeA(path,NULL); 
     if (size == 0) 
-    { 
+    {
         return FALSE;
     }
 

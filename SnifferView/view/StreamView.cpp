@@ -29,6 +29,7 @@ void CStreamView::InitStreamView(HWND hParent, int x, int y, int cx, int cy) {
     ShowCaretLine(true, RGB(60, 56, 54));
     SendMsg(SCI_SETSELBACK, 1, RGB(255, 255, 255));
     SendMsg(SCI_SETSELALPHA, 70, 0);
+    SendMsg(SCI_SETSCROLLWIDTHTRACKING, true, 0);
 
     RegisterParser(LABEL_TCP_PIPE1, TcpPipe1Parser, this);
     RegisterParser(LABEL_TCP_PIPE2, TcpPipe2Parser, this);

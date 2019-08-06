@@ -14,7 +14,7 @@ wstring ToCommonW(const strutf8 &str);
 strutf8 ToUtf8A(const string &str)
 {
     return ToUtf8W(ToWideChar(str));
-}
+} 
 
 strutf8 ToUtf8W(const wstring &str)
 {
