@@ -51,7 +51,12 @@ BOOL CPacketCacheMgr::PacketAttrInit(IN OUT PacketContent &msg) {
         attr.mUnique = msg.m_packet_mark;
         attr.mStartIndex = CFileCache::GetInst()->GetPacketCount();
         attr.mEndIndex = attr.mStartIndex + 1;
-        GetInst()->InitColour(msg);
+
+        //analysis不需要初始化颜色
+        if (g_work_state == em_work_sniffer)
+        {
+            GetInst()->InitColour(msg);
+        }
         attr.mColour = msg.m_colour;
         GetInst()->mAttrSet.insert(make_pair(msg.m_packet_mark, attr));
         GetInst()->mUniqueCount++;
