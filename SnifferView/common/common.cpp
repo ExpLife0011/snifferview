@@ -551,9 +551,9 @@ BOOL IsDirectoryExist(const char *dir)
     do 
     {
         if(find == INVALID_HANDLE_VALUE)   
-        {   
+        {
             break;
-        }   
+        }
 
         if(fileinfo.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)   
         {   

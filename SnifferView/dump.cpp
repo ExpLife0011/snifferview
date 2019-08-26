@@ -3,6 +3,7 @@
 #include <base64.h>
 #include "dump.h"
 #include "FileCache/FileCache.h"
+#include "PacketCache.h"
 
 static size_t s_check_size = 0;
 
@@ -150,7 +151,7 @@ BOOL WINAPI DumpPacketsToFile(IN const char *path)
     return status;
 }
 
-static const PacketContent *AnalysisSinglePacket(const char *buffer, size_t length)
+static PacketContent *AnalysisSinglePacket(const char *buffer, size_t length)
 {
     static PacketContent *sCache;
 
@@ -390,11 +391,12 @@ BOOL WINAPI DumpPacketsFromFile(IN const char *path)
             break;
         }
         itm = itk + 1;
-        const PacketContent *vs = NULL;
+        PacketContent *vs = NULL;
         while(mstring::npos != (itk = vt.find(DUMP_DATA_MARK, itm)))
         {
             if (vs = AnalysisSinglePacket(vt.c_str() + itm, itk - itm))
             {
+                CPacketCacheMgr::PacketAttrInit(*vs);
                 CFileCache::GetInst()->PushPacket(*vs, true);
             }
             else

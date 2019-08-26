@@ -963,6 +963,8 @@ VOID OnInitDialog(HWND hdlg)
     {
         if (g_sniffer_file.size() != 0)
         {
+            CFileCache::GetInst()->InitFileCache();
+            CPacketCacheMgr::GetInst()->InitCacheMgr();
             OnAnalysisDumpFile(g_sniffer_file.c_str());
         }
     }

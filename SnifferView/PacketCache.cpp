@@ -83,6 +83,7 @@ void CPacketCacheMgr::ResetCacheMgr() {
 
     mUniqueCount = 0;
     mColourSet.clear();
+    mAttrSet.clear();
     mInit = false;
     InitCacheMgr();
 }
