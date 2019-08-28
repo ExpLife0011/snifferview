@@ -1660,6 +1660,11 @@ VOID WINAPI OnKeyDown(WPARAM wp, LPARAM lp)
         WPARAM param = 0;
         switch(wp)
         {
+        case 'G'://ctrl + g
+            {
+                param = POPU_MENU_ITEM_CONFIG_ID;
+            }
+            break;
         case  0x43://ctrl + c
             {
                 param = POPU_MENU_ITEM_COPY_ID;
