@@ -5,8 +5,8 @@
 #include <map>
 #include <SyntaxView/include/SciLexer.h>
 #include <SyntaxView/include/Scintilla.h>
-#include "mstring.h"
-#include "LockBase.h"
+#include "../../ComLib/mstring.h"
+#include "../../ComLib/LockBase.h"
 #include "SyntaxDef.h"
 #include "export.h"
 

@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include <vector>
-#include <common.h>
+#include "../ComLib/common.h"
 #include "protocol.h"
 #include "packets.h"
 #include "analysis.h"

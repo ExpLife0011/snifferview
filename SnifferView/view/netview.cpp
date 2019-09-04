@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include <list>
-#include <common.h>
+#include "../../ComLib/common.h"
 #include "netview.h"
 #include "view.h"
 #include "../global.h"

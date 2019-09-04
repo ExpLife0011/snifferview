@@ -1,7 +1,7 @@
 #include <WinSock2.h>
 #include <Shlwapi.h>
-#include <mstring.h>
-#include <common.h>
+#include "../ComLib/mstring.h"
+#include "../ComLib/common.h"
 #include "help.h"
 #include "resource.h"
 

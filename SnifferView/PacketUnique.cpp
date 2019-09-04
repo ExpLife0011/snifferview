@@ -1,7 +1,7 @@
 #include <WinSock2.h>
 #include <Windows.h>
-#include "common/crc32.h"
-#include "common/StrUtil.h"
+#include "../ComLib/crc32.h"
+#include "../ComLib/StrUtil.h"
 #include "PacketUnique.h"
 #include "protocol.h"
 #include "analysis.h"

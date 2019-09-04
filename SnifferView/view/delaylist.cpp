@@ -13,7 +13,7 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <mstring.h>
+#include "../../ComLib/mstring.h"
 #include "delaylist.h"
 
 using namespace std;

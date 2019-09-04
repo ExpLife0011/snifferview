@@ -1,6 +1,6 @@
 #include <WinSock2.h>
-#include <common.h>
-#include <base64.h>
+#include "../ComLib/common.h"
+#include "../ComLib/base64.h"
 #include "dump.h"
 #include "FileCache/FileCache.h"
 #include "PacketCache.h"

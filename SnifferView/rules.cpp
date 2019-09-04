@@ -7,7 +7,7 @@
  *  history:
 */
 #include <WinSock2.h>
-#include <deelx.h>
+#include "../ComLib/deelx.h"
 #include <map>
 #include "rules.h"
 #include "http.h"

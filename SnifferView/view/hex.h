@@ -1,6 +1,6 @@
 #pragma  once
 #include <Windows.h>
-#include "../common/mstring.h"
+#include "../../ComLib/mstring.h"
 
 VOID WINAPI SetData(const BYTE *data, size_t length);
 

@@ -1,6 +1,6 @@
 #pragma  once
 #include <Windows.h>
-#include <mstring.h>
+#include "../ComLib/mstring.h"
 //#include "analysis.h"
 
 #define  HTTP_STATE_UNINIT	0

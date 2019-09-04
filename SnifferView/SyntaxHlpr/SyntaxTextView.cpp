@@ -4,7 +4,7 @@
 #include <SyntaxView/include/Scintilla.h>
 #include <SyntaxView/include/SciLexer.h>
 #include "SyntaxTextView.h"
-#include "common.h"
+#include "../../ComLib/common.h"
 
 #pragma comment(lib, "shlwapi.lib")
 

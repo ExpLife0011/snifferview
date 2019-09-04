@@ -1,7 +1,7 @@
 #pragma  once
 #include <Windows.h>
 #include <IPHlpApi.h>
-#include <mstring.h>
+#include "../../ComLib/mstring.h"
 
 #define  MSG_EXEC_CMD					(WM_USER + 5008)
 

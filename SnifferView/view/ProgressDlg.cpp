@@ -3,7 +3,7 @@
 #include <CommCtrl.h>
 #include "ProgressDlg.h"
 #include "../resource.h"
-#include "../common/common.h"
+#include "../../ComLib/common.h"
 
 using namespace std;
 

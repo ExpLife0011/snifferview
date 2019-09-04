@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <stdio.h>
-#include <mstring.h>
+#include "../../ComLib/mstring.h"
 #include "../global.h"
 #include "../resource.h"
 #include "view.h"

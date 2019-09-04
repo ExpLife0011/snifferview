@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include <list>
 #include <vector>
-#include <mstring.h>
+#include "../ComLib/mstring.h"
 
 using namespace std;
 

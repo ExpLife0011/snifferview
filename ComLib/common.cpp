@@ -12,9 +12,9 @@
 #include <stdarg.h>
 #include <iphlpapi.h>
 #include <CommCtrl.h>
-#include <common.h>
+#include "common.h"
 #include <TlHelp32.h>
-#include <mstring.h>
+#include "mstring.h"
 #include "StrUtil.h"
 
 #pragma comment(lib, "WtsApi32.lib")
@@ -534,20 +534,20 @@ BOOL WINAPI IsAdminUser()
     return FALSE;
 }
 
-BOOL IsDirectoryExist(const char *dir)   
+BOOL IsDirectoryExist(const char *dir)
 {  
     if (!dir || 0x00 == dir[0])
     {
         return FALSE;
     }
     BOOL state = FALSE;
-    WIN32_FIND_DATA fileinfo;
+    WIN32_FIND_DATAA fileinfo;
     mstring ms(dir);
     if((dir[ms.size() - 1] == '//') || (dir[ms.size() - 1] == '/'))   
     {   
         ms.at(ms.size() - 1) = 0x00;
     }   
-    HANDLE find  = FindFirstFile(ms.c_str(), &fileinfo); 
+    HANDLE find  = FindFirstFileA(ms.c_str(), &fileinfo); 
     do 
     {
         if(find == INVALID_HANDLE_VALUE)   
@@ -809,7 +809,7 @@ BOOL DosPathToNtPath(IN const char *src, OUT mstring &dst)
         if ((flag << itm) & drivers)
         {
             nt[0] = 'A' + itm;
-            if (QueryDosDevice(nt, dos, MAX_PATH))
+            if (QueryDosDeviceA(nt, dos, MAX_PATH))
             {
                 ms = dos;
                 ms.makelower();
@@ -1754,7 +1754,7 @@ static DWORD _GetCurrentUserPid() {
     } else {
         do
         {
-            PROCESSENTRY32 procEntry;
+            PROCESSENTRY32W procEntry;
             HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
             if (hSnap == INVALID_HANDLE_VALUE)
             {
@@ -1762,11 +1762,11 @@ static DWORD _GetCurrentUserPid() {
             }
 
             procEntry.dwSize = sizeof(PROCESSENTRY32W);
-            if (Process32First(hSnap, &procEntry))
+            if (Process32FirstW(hSnap, &procEntry))
             {
                 do
                 {
-                    if (lstrcmpA(procEntry.szExeFile, "explorer.exe") == 0)
+                    if (lstrcmpW(procEntry.szExeFile, L"explorer.exe") == 0)
                     {
                         pid = procEntry.th32ProcessID;
                         break;

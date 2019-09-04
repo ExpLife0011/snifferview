@@ -1,6 +1,6 @@
 #pragma  once
 #include <Windows.h>
-#include <mstring.h>
+#include "../../ComLib/mstring.h"
 
 #define MSG_UPDATE_DATA            (WM_USER + 10010)    //更新数据
 #define MSG_UPDATE_SELECT          (WM_USER + 10011)    //更新用户选择

@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include <Shlwapi.h>
-#include "../common/tpool.h"
+#include "../../ComLib/tpool.h"
 #include "FileCache.h"
 #include "../global.h"
 
@@ -60,7 +60,7 @@ bool CFileCache::InitFileCache() {
         FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
         NULL
         );
-    mMaxCache = 220000;
+    mMaxCache = 2210000;
     return true;
 }
 

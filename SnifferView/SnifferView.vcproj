@@ -137,6 +137,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				UACExecutionLevel="2"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -164,7 +165,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="$(SolutionDir)\tools\upx.exe $(OutDir)\$(ProjectName).exe"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -338,106 +339,6 @@
 			</File>
 			<File
 				RelativePath=".\res\toolbar.bmp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="common"
-			>
-			<File
-				RelativePath=".\common\base64.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\base64.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\common.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\common.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\crc32.c"
-				>
-			</File>
-			<File
-				RelativePath=".\common\crc32.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\deelx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\firewallctl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\firewallctl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\LockBase.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\mstring.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\mstring.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\servhlpr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\servhlpr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\sqlite3.c"
-				>
-			</File>
-			<File
-				RelativePath=".\common\sqlite3.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\SqliteOperator.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\SqliteOperator.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\StrUtil.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\StrUtil.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\tpool.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\tpool.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common\winsize.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\common\winsize.h"
 				>
 			</File>
 		</Filter>

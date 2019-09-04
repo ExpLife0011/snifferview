@@ -4,8 +4,8 @@
 #include <list>
 #include <string>
 #include "UserTask.h"
-#include "../common/common.h"
-#include "../common/StrUtil.h"
+#include "../../ComLib/common.h"
+#include "../../ComLib/StrUtil.h"
 
 #define EVENT_TASK_NOTIFY   "Global\\1a2c1501-6707-47be-a509-9e13ddab9e15_TaskNotify"
 #define PATH_TASK_CACHE     "software\\snifferview\\UserTask"

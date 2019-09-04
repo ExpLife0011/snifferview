@@ -13,9 +13,9 @@
 #include <list>
 #include <set>
 #include <map>
-#include <mstring.h>
-#include <common.h>
-#include <deelx.h>
+#include "../ComLib/mstring.h"
+#include "../ComLib/common.h"
+#include "../ComLib/deelx.h"
 #include "filter.h"
 #include "analysis.h"
 #include "rules.h"

@@ -1,8 +1,8 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <Shlwapi.h>
-#include "common/common.h"
-#include "common/servhlpr.h"
+#include "../ComLib/common.h"
+#include "../ComLib/servhlpr.h"
 #include "sfvserv.h"
 
 #define PATH_SERVICE_CACHE L"software\\snifferview\\sfvserv"

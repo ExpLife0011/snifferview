@@ -2,8 +2,8 @@
 #include <Windows.h>
 #include <vector>
 #include "../analysis.h"
-#include "mstring.h"
-#include "LockBase.h"
+#include "../../ComLib/mstring.h"
+#include "../../ComLib/LockBase.h"
 
 typedef bool (* pfnPacketEnumHandler)(size_t index, const PacketContent *info, void *param);
 

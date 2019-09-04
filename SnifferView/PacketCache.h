@@ -5,9 +5,9 @@ Packet Cache, example colour, index range,...
 #pragma once
 #include <Windows.h>
 #include <vector>
-#include "common/mstring.h"
-#include "common/LockBase.h"
-#include "common/SqliteOperator.h"
+#include "../ComLib/mstring.h"
+#include "../ComLib/LockBase.h"
+#include "../ComLib/SqliteOperator.h"
 #include "analysis.h"
 
 struct PacketAttr {

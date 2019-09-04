@@ -2,7 +2,7 @@
 #include "SyntaxCache.h"
 #include <assert.h>
 #include <Shlwapi.h>
-#include "LockBase.h"
+#include "../../ComLib/LockBase.h"
 
 using namespace std;
 

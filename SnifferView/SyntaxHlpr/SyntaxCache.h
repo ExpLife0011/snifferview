@@ -5,8 +5,8 @@
 #include <vector>
 #include "SyntaxTextView.h"
 #include "export.h"
-#include "mstring.h"
-#include "LockBase.h"
+#include "../../ComLib/mstring.h"
+#include "../../ComLib/LockBase.h"
 
 class CSyntaxCache : public SyntaxTextView {
 public:

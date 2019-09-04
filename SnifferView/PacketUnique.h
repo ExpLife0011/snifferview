@@ -3,8 +3,8 @@ packet unique get without cache. 2019/06/19
 */
 #pragma once
 #include "analysis.h"
-#include "common/LockBase.h"
-#include "common/mstring.h"
+#include "../ComLib/LockBase.h"
+#include "../ComLib/mstring.h"
 
 class CPacketUnique {
 public:

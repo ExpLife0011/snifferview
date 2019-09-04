@@ -4,9 +4,9 @@
 #include <list>
 #include <set>
 #include <vector>
-#include <common.h>
+#include "../../ComLib/common.h"
 #include <algorithm>
-#include <winsize.h>
+#include "../../ComLib/winsize.h"
 #include "netstat.h"
 #include "delaylist.h"
 #include "../resource.h"

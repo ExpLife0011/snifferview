@@ -4,10 +4,10 @@
 #include <ShlObj.h>
 #include <map>
 #include <list>
-#include <mstring.h>
-#include <common.h>
-#include <firewallctl.h>
-#include <servhlpr.h>
+#include "../ComLib/mstring.h"
+#include "../ComLib/common.h"
+#include "../ComLib/firewallctl.h"
+#include "../ComLib/servhlpr.h"
 #include "packets.h"
 #include "analysis.h"
 #include "view/view.h"
@@ -21,8 +21,8 @@
 #include "iocp_server.h"
 #include "view/netstat.h"
 #include "sfvserv.h"
-#include "StrUtil.h"
-#include "common/tpool.h"
+#include "../ComLib/StrUtil.h"
+#include "../ComLib/tpool.h"
 #include "UserProc/UserTask.h"
 
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -218,6 +218,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
     MessageBoxA(0, 0, 0, 0);
     return 0;
     */
+    //MessageBoxA(0, "1", 0, 0);
     dp(L"SnifferView启动参数：%ls", GetCommandLineW());
     g_m = m;
     if (!_AnalysisCmd())
@@ -225,6 +226,7 @@ int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
         dp(L"SnifferView参数错误");
         return 0;
     }
+    //MessageBoxA(0, "2", 0, 0);
 
     InitEveryMutexACL(g_sa, g_sd);
     InitFilterEngine();

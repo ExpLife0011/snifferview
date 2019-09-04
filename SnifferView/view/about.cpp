@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include <Windows.h>
-#include <common.h>
+#include "../../ComLib/common.h"
 #include "../global.h"
 #include "../resource.h"
 #include "view.h"

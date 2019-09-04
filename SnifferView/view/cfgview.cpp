@@ -1,6 +1,6 @@
 #include <WinSock2.h>
 #include <Shlwapi.h>
-#include <common.h>
+#include "../../ComLib/common.h"
 #include "cfgview.h"
 #include "view.h"
 #include "../servers.h"

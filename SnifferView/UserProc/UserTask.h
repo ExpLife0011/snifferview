@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "../common/mstring.h"
+#include "ComLib/mstring.h"
 
 #define TASK_OPEN_DUMP    "OpenDump"
 #define TASK_SAVE_DUMP    "SaveDump"

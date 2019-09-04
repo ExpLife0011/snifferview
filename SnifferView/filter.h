@@ -3,7 +3,7 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <mstring.h>
+#include "../ComLib/mstring.h"
 #include "analysis.h"
 
 using namespace std;

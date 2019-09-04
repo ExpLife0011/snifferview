@@ -1,6 +1,6 @@
 #pragma  once
 #include <vector>
-#include <mstring.h>
+#include "../Comlib/mstring.h"
 #include "protocol.h"
 #include "packets.h"
 #include "http.h"

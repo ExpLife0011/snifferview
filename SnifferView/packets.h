@@ -1,5 +1,5 @@
 #pragma  once
-#include <mstring.h>
+#include "../ComLib/mstring.h"
 #include "protocol.h"
 
 using namespace std;

@@ -13,7 +13,7 @@
 #include <map>
 #include <vector>
 #include <list>
-#include <common.h>
+#include "../ComLib/common.h"
 
 #pragma  comment(lib, "ws2_32.lib")
 using namespace std;

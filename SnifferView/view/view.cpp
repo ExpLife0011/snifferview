@@ -4,9 +4,9 @@
 #include <WtsApi32.h>
 #include <Commctrl.h>
 #include <Shlwapi.h>
-#include <common.h>
-#include <mstring.h>
-#include <winsize.h>
+#include "../../ComLib/common.h"
+#include "../../ComLib/mstring.h"
+#include "../../ComLib/winsize.h"
 #include "hex.h"
 #include "view.h"
 #include "netview.h"
@@ -27,7 +27,7 @@
 #include "../FileCache/FileCache.h"
 #include "../PacketCache.h"
 #include "ProgressDlg.h"
-#include "../common/StrUtil.h"
+#include "../../ComLib/StrUtil.h"
 #include "../UserProc/UserTask.h"
 
 enum MainViewMode {

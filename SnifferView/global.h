@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
-#include <mstring.h>
-#include "tpool.h"
+#include "../ComLib/mstring.h"
+#include "../ComLib/tpool.h"
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <map>
-#include <mstring.h>
+#include "../ComLib/mstring.h"
 #include "filter.h"
 #include "analysis.h"
 #include "http.h"

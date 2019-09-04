@@ -1,6 +1,6 @@
 #pragma  once
 #include <Windows.h>
-#include <common.h>
+#include "../ComLib/common.h"
 
 #define ETHERTYPE_IP		0x0800
 #define ETHERTYPE_ARP		0x0806
