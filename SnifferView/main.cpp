@@ -185,6 +185,23 @@ static BOOL _InstallSnifferServ()
     return bStat;
 }
 
+static void _InstallModule() {
+    mstring dllPath;
+    dllPath = gInstallPath;
+
+    dllPath.path_append("SyntaxView.dll");
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
+    {
+        ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
+    }
+
+    dllPath.path_append("..\\Dumper.dll");
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
+    {
+        ReleaseRes(dllPath.c_str(), IDR_DLL_DUMPER, "DLL");
+    }
+}
+
 static void _InitSniffParam() {
     char buff[512];
 #ifdef _DEBUG
@@ -205,34 +222,40 @@ static void _InitSniffParam() {
     return;
 }
 
+//初始化异常处理模块 2019/09/05
+static void _InitDumper() {
+    typedef bool (__stdcall *pfnDumperInit)(const wchar_t *);
+
+    mstring dllPath = gInstallPath;
+    dllPath.path_append("Dumper.dll");
+    pfnDumperInit pfn = (pfnDumperInit)GetProcAddress(LoadLibraryA(dllPath.c_str()), "DumperInit");
+
+    ustring wstr = AtoW(gInstallPath);
+    wstr.path_append(L"minidump");
+    pfn(wstr.c_str());
+}
+
 int WINAPI WinMain(HINSTANCE m, HINSTANCE p, LPSTR cmd, int show)
 {
-    //Debug
-    /*
-    CProgressDlg dlg;
-    dlg.DoModule(NULL);
-    return 0;
-
-    LoadLibraryA("SyntaxView.dll");
-    ShowStreamView(NULL, 0);
-    MessageBoxA(0, 0, 0, 0);
-    return 0;
-    */
-    //MessageBoxA(0, "1", 0, 0);
     dp(L"SnifferView启动参数：%ls", GetCommandLineW());
+
+    //Init Param
+    _InitSniffParam();
+    //安装组件
+    _InstallModule();
+    //初始化异常处理模块
+    _InitDumper();
+
     g_m = m;
     if (!_AnalysisCmd())
     {
         dp(L"SnifferView参数错误");
         return 0;
     }
-    //MessageBoxA(0, "2", 0, 0);
 
     InitEveryMutexACL(g_sa, g_sd);
     InitFilterEngine();
     InitSnfferViewConfig();
-    //Init Param
-    _InitSniffParam();
     gThreadPool = new ThreadPool(1, 4);
 
     WSADATA wsaData;

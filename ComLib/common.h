@@ -1,6 +1,5 @@
 #ifndef COMMON_H_H_
 #define COMMON_H_H_
-#include <WinSock2.h>
 #include <Windows.h>
 #include <vector>
 #include <list>
@@ -198,4 +197,8 @@ HANDLE ExecProcessW(LPCWSTR cmdLine, DWORD* procId, BOOL bShowWindow);
 HANDLE ExecProcessA(LPCSTR cmdLine, DWORD* procId, BOOL bShowWindow);
 
 BOOL GenerateLowSD(SECURITY_DESCRIPTOR* pSecDesc, PACL* pDacl);
+
+//获取系统版本信息
+mstring GetOSVersionExA();
+ustring GetOSVersionExW();
 #endif

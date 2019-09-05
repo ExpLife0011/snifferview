@@ -324,6 +324,7 @@ IDR_HTML_HELP           HTML                    "res\\SnifferView.html"
 //
 
 IDR_DLL_SYNTAX          DLL                     "res\\SyntaxView.dll"
+IDR_DLL_DUMPER          DLL                     "res\\Dumper.dll"
 #endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 

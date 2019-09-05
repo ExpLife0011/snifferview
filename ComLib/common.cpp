@@ -24,6 +24,7 @@
 #pragma comment(lib, "Psapi.lib")
 #pragma comment(lib, "Userenv.lib")
 #pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
 
@@ -1998,4 +1999,122 @@ BOOL GenerateLowSD(SECURITY_DESCRIPTOR* pSecDesc, PACL* pDacl)
     }
 
     return bRet;
+}
+
+static BOOL WINAPI _GetNtVersionNumbers(DWORD&dwMajorVer, DWORD& dwMinorVer, DWORD& dwBuildNumber)
+{
+    BOOL bRet = FALSE;
+    HMODULE hModNtdll = GetModuleHandleA("ntdll.dll");
+    if (hModNtdll)
+    {
+        typedef void (WINAPI* RtlGetNtVersionNumbers)(DWORD*, DWORD*, DWORD*);
+        RtlGetNtVersionNumbers pRtlGetNtVersionNumbers = (RtlGetNtVersionNumbers)GetProcAddress(hModNtdll, "RtlGetNtVersionNumbers");
+        if (pRtlGetNtVersionNumbers)
+        {
+            pRtlGetNtVersionNumbers(&dwMajorVer, &dwMinorVer, &dwBuildNumber);
+            dwBuildNumber &= 0x0ffff;
+            bRet = TRUE;
+        }
+    }
+
+    return bRet;
+}
+
+mstring GetOSVersionExA()
+{
+    string ver;
+    OSVERSIONINFOEXW osvi = {0};
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
+    GetVersionExW((OSVERSIONINFOW*)&osvi);
+
+    if (!_GetNtVersionNumbers(osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber))
+    {
+        return "";
+    }
+
+    // 不支持非NT的系统
+    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId)
+    {
+        return "";
+    }
+
+#define __APPEND(a, s)      \
+    if (a)                  \
+    {                       \
+    ver += s;           \
+    }                       \
+    ver                     \
+
+    if (osvi.dwMajorVersion <= 4)
+    {
+        ver += "Microsoft Windows NT ";
+    }
+    else if (5 == osvi.dwMajorVersion)
+    {
+        __APPEND(osvi.dwMinorVersion == 0, "Microsoft Windows 2000 ");
+        __APPEND(osvi.dwMinorVersion == 1, "Microsoft Windows XP ");
+        __APPEND(osvi.dwMinorVersion == 2, "Microsoft Server 2003 ");
+    }
+    else if (6 == osvi.dwMajorVersion)
+    {
+        if (0 == osvi.dwMinorVersion)
+        {
+            __APPEND(osvi.wProductType == VER_NT_WORKSTATION, "Microsoft Windows Vista ");
+            __APPEND(osvi.wProductType != VER_NT_WORKSTATION, "Microsoft Server 2008 ");
+        }
+        else if (1 == osvi.dwMinorVersion)
+        {
+            __APPEND(osvi.wProductType == VER_NT_WORKSTATION, "Microsoft Windows 7 ");
+            __APPEND(osvi.wProductType != VER_NT_WORKSTATION, "Microsoft Windows Server 2008 R2 ");
+        }
+        else if (2 == osvi.dwMinorVersion)
+        {
+            __APPEND(osvi.wProductType == VER_NT_WORKSTATION, "Microsoft Windows 8 ");
+        }
+        else if (3 == osvi.dwMinorVersion)
+        {
+            __APPEND(osvi.wProductType == VER_NT_WORKSTATION, "Microsoft Windows 8.1 ");
+        }
+    }
+    else if (10 == osvi.dwMajorVersion)
+    {
+        if (0 == osvi.dwMinorVersion)
+        {
+            __APPEND(osvi.wProductType == VER_NT_WORKSTATION, "Microsoft Windows 10 ");
+        }
+    }
+#undef __APPEND
+
+    if (osvi.dwMajorVersion <= 4)
+    {
+        char temp[256];
+        wnsprintfA(
+            temp,
+            RTL_NUMBER_OF(temp),
+            "version %d.%d %s (Build %d)\n",
+            osvi.dwMajorVersion,
+            osvi.dwMinorVersion,
+            osvi.szCSDVersion,
+            osvi.dwBuildNumber & 0xFFFF
+            );
+        ver += temp;
+    }
+    else
+    {
+        char temp[256];
+        wnsprintfA(
+            temp,
+            RTL_NUMBER_OF(temp),
+            "%s (Build %d)",
+            osvi.szCSDVersion,
+            osvi.dwBuildNumber & 0xFFFF
+            );
+        ver += temp;
+    }
+
+    return ver;
+}
+
+ustring GetOSVersionExW() {
+    return AtoW(GetOSVersionExA());
 }

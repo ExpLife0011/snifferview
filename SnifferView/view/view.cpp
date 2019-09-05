@@ -772,18 +772,6 @@ static BOOL _ChangeWndMessageFilter(UINT uMessage, BOOL bAllow)
     return bResult;
 }
 
-static void _InitSniffer() {
-    mstring dllPath;
-    dllPath = gInstallPath;
-
-    dllPath.path_append("SyntaxView.dll");
-    if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
-    {
-        ReleaseRes(dllPath.c_str(), IDR_DLL_SYNTAX, "DLL");
-    }
-    LoadLibraryA(dllPath.c_str());
-}
-
 //Filter Edit Init
 static void _InitFilterEdit() {
     gsBrushRight = CreateSolidBrush(gsRightColour);
@@ -897,6 +885,11 @@ static void _StartUserProc() {
 VOID OnInitDialog(HWND hdlg)
 {
     g_main_view = hdlg;
+    //º”‘ÿ”Ô∑®øÿº˛
+    mstring dllPath = gInstallPath;
+    dllPath.path_append("SyntaxView.dll");
+    LoadLibraryA(dllPath.c_str());
+
     s_spy_pen = (HPEN)GetStockObject(WHITE_PEN);
     SendMessageA(hdlg, WM_SETICON, (WPARAM)TRUE, (LPARAM)LoadIconA(g_m, MAKEINTRESOURCEA(IDI_MAIN)));
     s_status = CreateStatusBar(hdlg);
@@ -974,7 +967,6 @@ VOID OnInitDialog(HWND hdlg)
 
     _ChangeWndMessageFilter(WM_DROPFILES, TRUE);
     _ChangeWndMessageFilter(0x0049, TRUE);
-    _InitSniffer();
 }
 
 VOID WINAPI OnUpdateMsg(HWND hdlg)

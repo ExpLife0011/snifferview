@@ -20,6 +20,8 @@
 #define IDR_DLL_SYNTAX                  134
 #define IDD_STREAM                      135
 #define IDD_PROGRESS                    136
+#define IDR_DLL2                        138
+#define IDR_DLL_DUMPER                  138
 #define IDC_EDIT1                       1003
 #define IDC_EDIT                        1003
 #define IDC_EDT_ABOUT                   1003
@@ -37,7 +39,6 @@
 #define IDC_RADIO1                      1006
 #define IDC_RDO_H                       1006
 #define IDC_BTN_END                     1006
-#define IDC_BUTTON2                     1006
 #define IDC_STREAM_BTN_LAST             1006
 #define IDC_RADIO2                      1007
 #define IDC_RDO_N                       1007
@@ -150,7 +151,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_RESOURCE_VALUE        139
 #define _APS_NEXT_COMMAND_VALUE         40052
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           101
