@@ -110,40 +110,16 @@ static BOOL _AnalysisCmd()
 
 static BOOL _InstallSnifferServ()
 {
-    WCHAR wszSelf[MAX_PATH] = {0};
-    WCHAR wszServ[MAX_PATH] = {0};
-    GetModuleFileNameW(NULL, wszSelf, MAX_PATH);
-    GetWindowsDirectoryW(wszServ, MAX_PATH);
-    PathAppendW(wszServ, L"SfvServ.exe");
+    ustring procPath = AtoW(gInstallPath);
+    procPath.path_append(L"SnifferView.exe");
 
     BOOL bServ = TRUE;
     BOOL bStat = FALSE;
     HANDLE hNotify = NULL;
     do 
     {
-        if (INVALID_FILE_ATTRIBUTES == GetFileAttributesW(wszServ))
-        {
-            CopyFileW(wszSelf, wszServ, FALSE);
-        }
-        else
-        {
-            if (!IsSameFileW(wszSelf, wszServ))
-            {
-                ustring wstrTemp(wszServ);
-                ustring wstrName;
 
-                wstrName.format(L"..\\SfvServ%08x.tmp", GetTickCount());
-                wstrTemp.path_append(wstrName.c_str());
-
-                MoveFileExW(wszServ, wstrTemp.c_str(), MOVEFILE_REPLACE_EXISTING);\
-                MoveFileExW(wstrTemp.c_str(), NULL, MOVEFILE_DELAY_UNTIL_REBOOT);
-                CopyFileW(wszSelf, wszServ, FALSE);
-                ServStopW(SFV_SERVICE_NAME);
-                ServStartW(SFV_SERVICE_NAME);
-            }
-        }
-
-        if (INVALID_FILE_ATTRIBUTES == GetFileAttributesW(wszServ))
+        if (INVALID_FILE_ATTRIBUTES == GetFileAttributesW(procPath.c_str()))
         {
             break;
         }
@@ -157,7 +133,7 @@ static BOOL _InstallSnifferServ()
             break;
         }
 
-        bServ = (InstallLocalService(wszServ, SFV_SERVICE_NAME, SFV_SERVICE_DISPLAY_NAME,SFV_SERVICE_DESCRIPTION) && StartLocalService(SFV_SERVICE_NAME));
+        bServ = (InstallLocalService(procPath.c_str(), SFV_SERVICE_NAME, SFV_SERVICE_DISPLAY_NAME,SFV_SERVICE_DESCRIPTION) && StartLocalService(SFV_SERVICE_NAME));
         if (bServ)
         {
             hNotify = OpenEventW(EVENT_MODIFY_STATE, FALSE, SFV_NOTIFY_NAME);
@@ -199,6 +175,14 @@ static void _InstallModule() {
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(dllPath.c_str()))
     {
         ReleaseRes(dllPath.c_str(), IDR_DLL_DUMPER, "DLL");
+    }
+
+    mstring sniffPath = dllPath.path_append("..\\SnifferView.exe");
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(sniffPath.c_str()))
+    {
+        char selfPath[512];
+        GetModuleFileNameA(NULL, selfPath, sizeof(selfPath));
+        CopyFileA(selfPath, sniffPath.c_str(), TRUE);
     }
 }
 
