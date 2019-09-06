@@ -539,7 +539,7 @@ static void _InitSnifWatcher()
 
 VOID OnSnifferExit()
 {
-    ClearWatchers();
+    //ClearWatchers();
     StopAllSnifferServers();
     EndWork();
 }
