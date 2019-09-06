@@ -151,15 +151,15 @@ ustring CDumperMgr::GetDumpFilePath(DWORD pid, const ustring &dir) const {
     SYSTEMTIME time = {0};
     GetLocalTime(&time);
     ustring fileName = FormatW(
-        L"%ls_%d_%04d-%02d-%02d_%02d_%02d_%02d.dmp",
+        L"%ls_%04d-%02d-%02d_%02d_%02d_%02d_pid_%d",
         procName.c_str(),
-        pid,
         time.wYear,
         time.wMonth,
         time.wDay,
         time.wHour,
         time.wMinute,
-        time.wSecond
+        time.wSecond,
+        pid
         );
 
     ustring fullPath(dir);
@@ -329,7 +329,17 @@ void CDumperMgr::RundllFun(HWND hwnd, HINSTANCE hinst, LPSTR command, int show) 
             break;
         }
 
-        GetInst()->mDumpFullPath = GetInst()->GetDumpFilePath(pid, AtoW(dirStr));;
+        ustring filePath = GetInst()->GetDumpFilePath(pid, AtoW(dirStr));
+        GetInst()->mDumpFullPath = filePath + L".dmp";
+        GetInst()->mLogPath = filePath + L".log";
+
+        //wirte log file
+        FILE *fp = fopen(WtoA(GetInst()->mLogPath.c_str()).c_str(), "wb+");
+        byte bom[] = {0xff, 0xfe};
+        fwrite(bom, 1, sizeof(bom), fp);
+        fwrite(GetInst()->mExceptionDesc.c_str(), 2, GetInst()->mExceptionDesc.size(), fp);
+        fclose(fp);
+
         hDumpFile = CreateFileW(GetInst()->mDumpFullPath.c_str(), GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
         if (!hDumpFile || INVALID_HANDLE_VALUE == hDumpFile)

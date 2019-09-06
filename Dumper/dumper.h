@@ -23,7 +23,6 @@ private:
     CDumperMgr();
     virtual ~CDumperMgr();
     PMiniDumpWriteDump GetWriterProc() const;
-    std::ustring GetDumpFileName() const;
     void ShowErrDlg();
 
     BOOL StartRundll(LPCWSTR dllPath, LPCWSTR funName, LPCWSTR param) const;
@@ -39,5 +38,6 @@ private:
     //rundll32进程参数
     DWORD mPid;
     std::ustring mDumpFullPath;
+    std::ustring mLogPath;
     std::ustring mExceptionDesc;
 };
