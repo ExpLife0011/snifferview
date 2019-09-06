@@ -24,6 +24,8 @@ CUserTaskMgr *CUserTaskMgr::GetInst() {
 }
 
 UINT_PTR CUserTaskMgr::OFNHookProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp) {
+    const int sTimerId = 6675;
+
     if (msg == WM_INITDIALOG)
     {
         dp(L"init fileDlg");
@@ -32,6 +34,18 @@ UINT_PTR CUserTaskMgr::OFNHookProc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp) {
         CenterWindow(NULL, parent);
 
         SetWindowPos(parent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        SetTimer(hdlg, sTimerId, 50, NULL);
+    } else if (msg == WM_TIMER)
+    {
+        if (wp == sTimerId)
+        {
+            dp(L"timer event");
+            HWND parent = GetParent(hdlg);
+            SetForegroundWindow(parent);
+            CenterWindow(NULL, parent);
+            SetWindowPos(parent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            KillTimer(hdlg, sTimerId);
+        }
     }
     return 0;
 }
