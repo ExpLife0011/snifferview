@@ -946,6 +946,7 @@ VOID OnInitDialog(HWND hdlg)
     {
         CFileCache::GetInst()->InitFileCache();
         CPacketCacheMgr::GetInst()->InitCacheMgr();
+        InitPacketLocker();
         _InitSnifWatcher();
         SetWindowTextA(hdlg, SNIFFER_STATE_NAME);
         //启动当前用户态进程
@@ -956,6 +957,7 @@ VOID OnInitDialog(HWND hdlg)
     {
         if (g_sniffer_file.size() != 0)
         {
+            InitPacketLocker();
             CFileCache::GetInst()->InitFileCache();
             CPacketCacheMgr::GetInst()->InitCacheMgr();
             OnAnalysisDumpFile(g_sniffer_file.c_str());

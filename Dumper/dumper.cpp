@@ -283,6 +283,7 @@ void CDumperMgr::ShowErrDlg() {
 void CDumperMgr::RundllFun(HWND hwnd, HINSTANCE hinst, LPSTR command, int show) {
     HANDLE hDbgProcess = NULL;
     HANDLE hDumpFile = NULL;
+    bool result = false;
 
     do
     {
@@ -337,7 +338,7 @@ void CDumperMgr::RundllFun(HWND hwnd, HINSTANCE hinst, LPSTR command, int show) 
         }
 
         pfnWriter(hDbgProcess, pid, hDumpFile, MiniDumpNormal, NULL, NULL, NULL);
-        GetInst()->ShowErrDlg();
+        result = true;
     } while (FALSE);
 
     if (hDbgProcess)
@@ -348,6 +349,11 @@ void CDumperMgr::RundllFun(HWND hwnd, HINSTANCE hinst, LPSTR command, int show) 
     if (hDumpFile)
     {
         CloseHandle(hDumpFile);
+    }
+
+    if (result == true)
+    {
+        GetInst()->ShowErrDlg();
     }
 }
 

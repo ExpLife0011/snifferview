@@ -4,8 +4,7 @@
 
 using namespace std;
 
-VOID WINAPI ClearPacketBuffer();
-
-VOID WINAPI PushPacket(const char *buffer, size_t length);
-
-BOOL WINAPI PopPacket(mstring &packet);
+void InitPacketLocker();
+void ClearPacketBuffer();
+void PushPacket(const char *buffer, size_t length);
+BOOL PopPacket(mstring &packet);;

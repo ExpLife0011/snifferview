@@ -191,7 +191,7 @@ VOID WINAPI PacketAnalysis(IN OUT PacketContent &msg)
         UpdatePacketsCount();
     } while (FALSE);
 
-    if (bOverFLow)
+    if (!IsSnifferSuspend() && bOverFLow)
     {
         NotifyPacketsOverFlow();
     }
@@ -220,11 +220,7 @@ DWORD WINAPI PacketAnalysisThread(LPVOID p)
                 {
                     continue;
                 }
-
-                if (!s_suspend)
-                {
-                    PacketAnalysis(msg);
-                }
+                PacketAnalysis(msg);
             }
         }
         else
