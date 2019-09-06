@@ -203,20 +203,28 @@ static void _InstallModule() {
 }
 
 static void _InitSniffParam() {
-    char buff[512];
 #ifdef _DEBUG
+    char buff[512];
     GetModuleFileNameA(NULL, buff, sizeof(buff));
     PathAppendA(buff, "..");
     gInstallPath = buff;
     PathAppendA(buff, "cache");
     gCfgPath = buff;
 #else
-    GetWindowsDirectoryA(buff, sizeof(buff));
+    char installDir[512];
+    GetWindowsDirectoryA(installDir, sizeof(installDir));
+    PathAppendA(installDir, "SnifferView");
 
-    PathAppendA(buff, "SnifferView");
-    gInstallPath = buff;
-    PathAppendA(buff, "cache");
-    gCfgPath = buff;
+    char selfPath[512];
+    GetModuleFileNameA(NULL, selfPath, RTL_NUMBER_OF(selfPath));
+
+    mstring verStr;
+    GetFileVersion(selfPath, verStr);
+    PathAppendA(installDir, verStr.c_str());
+
+    gInstallPath = installDir;
+    PathAppendA(installDir, "cache");
+    gCfgPath = installDir;
 #endif
     SHCreateDirectoryExA(NULL, gCfgPath.c_str(), NULL);
     return;
