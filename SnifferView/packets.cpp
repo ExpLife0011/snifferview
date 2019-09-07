@@ -42,6 +42,13 @@ VOID PushPacket(const char *buffer, size_t length)
             s_packet_border.push_back(0);
             s_packet_border.push_back(length);
         }
+
+        static DWORD sLastCount = GetTickCount();
+        if (GetTickCount() - sLastCount >= 5000)
+        {
+            sLastCount = GetTickCount();
+            dp(L"bufferSize:%u", s_org_packets.size());
+        }
     } catch (exception &e){
         ClearPacketBuffer();
         dp(L"append err, buff size1:%I64d size2:%d, buffer:0x%p, length:%d, msg:%hs", sBuffSize, (int)s_packet_border.size(), buffer, length, e.what());

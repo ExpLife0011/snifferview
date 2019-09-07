@@ -218,6 +218,7 @@ DWORD WINAPI PacketAnalysisThread(LPVOID p)
                 msg.set_packet(packet);
                 if (!TraverseWatchers(msg))
                 {
+                    dp(L"TraverseWatchers Err");
                     continue;
                 }
                 PacketAnalysis(msg);
