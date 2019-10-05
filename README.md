@@ -1,5 +1,6 @@
 ### snifferview-封包嗅探分析工具
 码云git地址：https://gitee.com/lougd/snifferview.git
+编译完成的可执行文件: https://pan.baidu.com/s/1CPKh5cWyIog2Fbn7XHFxmQ
 
 #### 开发记录:
   这个工具的第一个版本是2015年做的，因为工作中经常要在不同的终端PC上抓包分析网络协议， 一直用的wireshark进行抓包分析，wireshark的安装包比较大，每次装起来太繁琐，也不支持回环网络封包的捕获，于是就起意自己做一个自己的封包协议分析工具。于是就有了这个工具的第一个版本。然后一边使用一边丰富工具的功能，就有了现在的这个版本。
